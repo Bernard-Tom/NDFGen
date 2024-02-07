@@ -14,6 +14,7 @@ class TravelWidget(QGroupBox):
         self.UIComponents()
         self.setStyleSheet("QGroupBox {border: 2px solid #000000;}")
         self.setFixedHeight(100)
+        self.setFixedWidth(500)
 
     def setRtrnState(self) -> None:
         if self.travel.rtrn_state == 'true': self.return_txt='Aller Retour'
@@ -76,14 +77,12 @@ class HistoricListWidget(QWidget):
 
     def updateLayout(self,travel_list:list):
         """Delete all widgets of layout then add new widgets from travel_list"""
-        if self.main_layout.count() != 0: 
-            print('delete widgets')  
+        if self.main_layout.count() != 0:  
             for i in range(self.main_layout.count()):
                 self.main_layout.itemAt(i).widget().deleteLater()
         for e in travel_list:
             travel = Travel(e)
             travel_widget = TravelWidget(travel)
-            print(travel_widget.travel.start)
             self.main_layout.addWidget(travel_widget)
 
 class SearchListWidget(QWidget):

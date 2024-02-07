@@ -38,7 +38,7 @@ class Data():
             list_reader = list(reader)
             result_list = []
             for row in list_reader[1:]:
-                for e in row:
+                for e in row[:3]: # Get date, start and end only
                     if text_to_find.lower() in e.lower():
                         result_list.append(row)
                         break
