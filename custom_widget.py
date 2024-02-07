@@ -10,7 +10,12 @@ class AdressEditorWidget(QGroupBox):
         self.root = Roots()
         self.setTitle(title)
         self.UIComponents()
-        self.setStyleSheet("QGroupBox {border: 2px solid #000000;}")
+        self.setStyleSheet('QGroupBox:title {'
+                 'subcontrol-origin: margin;'
+                 'subcontrol-position: top center;'
+                 'padding-left: 10px;'
+                 'padding-right: 10px; }'
+                 )
 
     def UIComponents(self) -> None:
         """Set graphical components"""
@@ -29,18 +34,55 @@ class AdressEditorWidget(QGroupBox):
 
         self.search_bar = SearchBarWidget(self.root.adress)
         self.search_bar.search_signal.connect(self.onSearchSignal)
-        self.my_scroll = QScrollArea()
         self.list_widget = AdressListWidget(self.root.adress)
-        self.my_scroll.setWidget(self.list_widget)
 
         self.main_layout.addWidget(self.house_btn)
         self.main_layout.addWidget(self.local_btn)
         self.main_layout.addWidget(self.school_btn)
         self.main_layout.addWidget(self.search_bar)
-        self.main_layout.addWidget(self.my_scroll)
+        self.main_layout.addWidget(self.list_widget)
 
     def onSearchSignal(self) -> None:
         self.list_widget.update(self.search_bar.result_list)
+
+    def getAdress(self) -> str:
+        return(self.search_bar.getAdress())
+
+class PrmtrEditorWidget(QGroupBox):
+    def __init__(self):
+        super().__init__()
+        self.setTitle('Parametres')
+        self.UIComponents()
+        self.setStyleSheet('QGroupBox:title {'
+                 'subcontrol-origin: margin;'
+                 'subcontrol-position: top center;'
+                 'padding-left: 10px;'
+                 'padding-right: 10px; }'
+                 )
+
+    def UIComponents(self):
+        self.main_layout = QFormLayout()
+        self.setLayout(self.main_layout)
+        
+        self.date_edit = QLineEdit()
+        self.distance_edit = QLineEdit()
+        self.return_btn = QCheckBox('Aller / Retour')
+
+        self.main_layout.addRow('Date',self.date_edit)
+        self.main_layout.addRow('Distance',self.distance_edit)
+        self.main_layout.addRow(self.return_btn)
+
+    def getDate(self) -> str:
+        return(self.date_edit.text())
+    
+    def getDistance(self) -> str:
+        return(self.distance_edit.text())
+    
+    def getreturnState(self) -> str:
+        if self.return_btn.isChecked(): return_state = 'true'
+        else: return_state = 'false'
+        return(return_state)
+
 
 class TravelWidget(QGroupBox):
     """Custom wigdget used to show Travel in list"""
@@ -82,7 +124,7 @@ class TravelWidget(QGroupBox):
 
     def onEditClicked(self):
         self.edit_signal.emit()
-        
+
 class SearchBarWidget(QLineEdit):
     """
     Class used to implement QLineEdit search bar
@@ -101,6 +143,9 @@ class SearchBarWidget(QLineEdit):
         """When text changed get list result from csv serach"""
         self.result_list = self.data.findList(self.root,self.text()) # [['a','b'],['a','b]]
         self.search_signal.emit()
+
+    def getAdress(self) -> str:
+        return(self.text())
 
 class AdressListWidget(QListWidget):
     def __init__(self,root) -> None:

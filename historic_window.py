@@ -12,11 +12,30 @@ class TravelEditorWin(QWidget):
         """Set graphical components"""
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
-        start_editor = AdressEditorWidget('start')
-        end_editor = AdressEditorWidget('end')
+        self.start_editor = AdressEditorWidget('start')
+        self.end_editor = AdressEditorWidget('end')
+        self.prmtr_editor = PrmtrEditorWidget()
 
-        main_layout.addWidget(start_editor)
-        main_layout.addWidget(end_editor)
+        btn_layout = QVBoxLayout()
+        save_btn = QPushButton('Enregistrer')
+        save_btn.clicked.connect(self.save)
+
+        main_layout.addWidget(self.start_editor)
+        main_layout.addWidget(self.end_editor)
+        main_layout.addWidget(self.prmtr_editor)
+        main_layout.addWidget(save_btn)
+
+    def getUserTravel(self) -> Travel:
+        start = self.start_editor.getAdress()
+        end = self.end_editor.getAdress()
+        date = self.prmtr_editor.getDate()
+        distance = self.prmtr_editor.getDistance()
+        return_state = self.prmtr_editor.getreturnState()
+        return(Travel([date,start,end,distance,return_state]))
+
+    def save(self):
+        travel = self.getUserTravel()
+        print(travel)
 
 class HistoricWin(QWidget):
     def __init__(self) -> None:

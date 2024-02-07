@@ -5,26 +5,12 @@ class Travel():
     A class used to represent a Travel
     Attributes : rtrn_state = 'true' or 'false
     """
-    def __init__(self,date:str,start:str,end:str,distance:str,rtrn_state:str) -> None:
-        self.date = date
-        self.start = start
-        self.end = end
-        self.distance = distance
-        self.rtrn_state = rtrn_state
-
     def __init__(self,list:list) -> None:
         self.date = list[0]
         self.start = list[1]
         self.end = list[2]
         self.distance = list[3]
         self.rtrn_state = list[4]
-
-    def getPrmtrsDict(self) -> dict:
-        """Return the travel parameters with a dict object"""
-        prmtrs = {'date':self.date,
-                  'distance':self.distance,
-                  'return_state':self.rtrn_state}   
-        return(prmtrs)
     
 class Data():
     """A class used to get and set saved file datas"""    
