@@ -1,7 +1,46 @@
 from PyQt6.QtWidgets import *
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtWidgets import QWidget
 from custom_object import Travel
 from custom_object import *
+
+class AdressEditorWidget(QGroupBox):
+    def __init__(self,title) -> None:
+        super().__init__()
+        self.root = Roots()
+        self.setTitle(title)
+        self.UIComponents()
+        self.setStyleSheet("QGroupBox {border: 2px solid #000000;}")
+
+    def UIComponents(self) -> None:
+        """Set graphical components"""
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+
+        self.btn_grp = QButtonGroup()
+        self.btn_grp.setExclusive(True)
+        self.house_btn = QRadioButton('Maison')
+        self.local_btn = QRadioButton('Local')
+        self.school_btn = QRadioButton('Ecole')
+
+        self.btn_grp.addButton(self.house_btn)
+        self.btn_grp.addButton(self.local_btn)
+        self.btn_grp.addButton(self.school_btn)
+
+        self.search_bar = SearchBarWidget(self.root.adress)
+        self.search_bar.search_signal.connect(self.onSearchSignal)
+        self.my_scroll = QScrollArea()
+        self.list_widget = AdressListWidget(self.root.adress)
+        self.my_scroll.setWidget(self.list_widget)
+
+        self.main_layout.addWidget(self.house_btn)
+        self.main_layout.addWidget(self.local_btn)
+        self.main_layout.addWidget(self.school_btn)
+        self.main_layout.addWidget(self.search_bar)
+        self.main_layout.addWidget(self.my_scroll)
+
+    def onSearchSignal(self) -> None:
+        self.list_widget.update(self.search_bar.result_list)
 
 class TravelWidget(QGroupBox):
     """Custom wigdget used to show Travel in list"""
@@ -60,79 +99,41 @@ class SearchBarWidget(QLineEdit):
 
     def ontextChanged(self) -> None:
         """When text changed get list result from csv serach"""
-        self.result_list = self.data.findDataList(self.root,self.text())
+        self.result_list = self.data.findList(self.root,self.text()) # [['a','b'],['a','b]]
         self.search_signal.emit()
 
-class HistoricListWidget(QWidget):
-    def __init__(self) -> None:
+class AdressListWidget(QListWidget):
+    def __init__(self,root) -> None:
         super().__init__()
         self.data = Data()
-        self.root = Roots()
+        self.root = root
+        self.setFixedHeight(60)
+
+    def update(self,return_list:list) -> None:
+        self.clear()
+        for e in return_list:
+            item = QListWidgetItem(e[0])
+            self.addItem(item)
+
+class TravelListWidget(QWidget):
+    def __init__(self,root) -> None:
+        super().__init__()
+        self.data = Data()
+        self.root = root
         self.UIComponents()
 
-    def UIComponents(self):
+    def UIComponents(self) -> None:
+        """Set graphical components"""
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
-        self.updateLayout(self.data.getAllDataList(self.root.historic_path))
+        self.update(self.data.getAllTravelList(self.root))
 
-    def updateLayout(self,travel_list:list):
+    def update(self,return_list:list) -> None:
         """Delete all widgets of layout then add new widgets from travel_list"""
         if self.main_layout.count() != 0:  
             for i in range(self.main_layout.count()):
                 self.main_layout.itemAt(i).widget().deleteLater()
-        for e in travel_list:
+        for e in return_list:
             travel = Travel(e)
             travel_widget = TravelWidget(travel)
             self.main_layout.addWidget(travel_widget)
-
-class SearchListWidget(QWidget):
-    def __init__(self,data:list): # data : [ str,str...]
-        super().__init__()
-        self.data = data
-        self.UIComponents()
-        self.enable(False)
-
-    def UIComponents(self):
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-
-        self.search_edit = QLineEdit()
-        self.search_edit.textChanged.connect(self.onTextChange)
-        self.list_widget = QListWidget()
-        self.list_widget.itemSelectionChanged.connect(self.onSelectionChange)
-        self.list_widget.setFixedHeight(60)
-
-        layout.addWidget(self.search_edit)
-        layout.addWidget(self.list_widget)
-
-    def setAdress(self,adress):
-        self.search_edit.setText(adress)
-
-    def onTextChange(self,text:str):
-        # Actualise la recherche lorsque le text change
-        self.list_widget.clear()
-        if text != '':
-            for e in self.data : # data : [[str],[str]]
-                item = QListWidgetItem(e[0])
-                if item.text().lower().find(text.lower()) != -1:
-                    self.list_widget.addItem(item)
-                else : del(item)
-
-    def onSelectionChange(self):
-        # Actualise le texte de la searchBar et reset les résultats
-        select_str = self.list_widget.currentItem().text()
-        self.search_edit.setText(select_str)
-        self.list_widget.clear()
-
-    def enable(self,state:bool):
-        # Active ou désactive l'édition de la ligne de selection
-        self.search_edit.setEnabled(state)
-
-    def getSelectionText(self):
-        return(self.search_edit.text())
-    
-    def newSelection(self):
-        # Retourne True si le texte de la searchBar n'est pas dans data
-        for e in self.data:
-            if self.search_edit.text().lower() == e[0].lower(): return(False)
-            else : return(True)
