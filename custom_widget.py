@@ -83,7 +83,6 @@ class PrmtrEditorWidget(QGroupBox):
         else: return_state = 'false'
         return(return_state)
 
-
 class TravelWidget(QGroupBox):
     """Custom wigdget used to show Travel in list"""
     edit_signal = pyqtSignal()
@@ -171,7 +170,7 @@ class TravelListWidget(QWidget):
         """Set graphical components"""
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
-        self.update(self.data.getAllTravelList(self.root))
+        self.update(self.data.getAllTravelList(self.root)[1:])
 
     def update(self,return_list:list) -> None:
         """Delete all widgets of layout then add new widgets from travel_list"""

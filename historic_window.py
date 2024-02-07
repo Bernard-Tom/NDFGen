@@ -6,6 +6,8 @@ from custom_widget import *
 class TravelEditorWin(QWidget):
     def __init__(self) -> None:
         super().__init__()
+        self.data = Data()
+        self.root = Roots()
         self.UIComponents()
 
     def UIComponents(self)-> None:
@@ -16,7 +18,6 @@ class TravelEditorWin(QWidget):
         self.end_editor = AdressEditorWidget('end')
         self.prmtr_editor = PrmtrEditorWidget()
 
-        btn_layout = QVBoxLayout()
         save_btn = QPushButton('Enregistrer')
         save_btn.clicked.connect(self.save)
 
@@ -35,7 +36,7 @@ class TravelEditorWin(QWidget):
 
     def save(self):
         travel = self.getUserTravel()
-        print(travel)
+        self.data.saveTravel(self.root.historic,travel.getList())
 
 class HistoricWin(QWidget):
     def __init__(self) -> None:

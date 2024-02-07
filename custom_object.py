@@ -12,6 +12,9 @@ class Travel():
         self.distance = list[3]
         self.rtrn_state = list[4]
     
+    def getList(self) -> list:
+        return([self.date,self.start,self.end,self.distance,self.rtrn_state])
+    
 class Data():
     """A class used to get and set saved file datas"""    
     def __init__(self) -> None:
@@ -35,7 +38,18 @@ class Data():
         with open(root,'r')as csv_file:
             reader = csv.reader(csv_file,delimiter=';')
             list_reader = list(reader)
-        return(list_reader[1:])  
+        return(list_reader) 
+    
+    def writeData(self,root:str,data:list) -> None:
+        with open(root,'w',newline="")as csv_file:
+            writer = csv.writer(csv_file,delimiter=';')
+            for row in data:
+                writer.writerow(row)
+
+    def saveTravel(self,root,row:list) -> None:
+        data = self.getAllTravelList(root)
+        data.append(row)
+        self.writeData(root,data)
 
 class Roots():
     def __init__(self) -> None:
