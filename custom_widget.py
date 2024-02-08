@@ -33,12 +33,12 @@ class AdressEditorWidget(QGroupBox):
         self.btn_grp = QButtonGroup()
         self.btn_grp.setExclusive(True)
         self.house_btn = QRadioButton('Maison')
+        self.house_btn.clicked.connect(self.onBtnClicked)
         self.local_btn = QRadioButton('Local')
-        self.school_btn = QRadioButton('Ecole')
+        self.local_btn.clicked.connect(self.onBtnClicked)
 
         self.btn_grp.addButton(self.house_btn)
         self.btn_grp.addButton(self.local_btn)
-        self.btn_grp.addButton(self.school_btn)
 
         self.search_bar = QLineEdit()
 
@@ -48,8 +48,19 @@ class AdressEditorWidget(QGroupBox):
 
         self.main_layout.addWidget(self.house_btn)
         self.main_layout.addWidget(self.local_btn)
-        self.main_layout.addWidget(self.school_btn)
         self.main_layout.addWidget(self.search_bar)
+
+    def getSpecAdress(self,string_to_find) -> list:
+        for list in self.data.getDataList(self.root.spec_adress):
+            if string_to_find in list:
+                return(list[1])
+
+    def onBtnClicked(self)-> None:
+        if self.house_btn.isChecked():
+            adress = self.getSpecAdress('house')
+        if self.local_btn.isChecked():
+            adress = self.getSpecAdress('local')
+        self.search_bar.setText(adress)
 
     def getAdress(self) -> str:
         return(self.search_bar.text())

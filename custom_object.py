@@ -23,19 +23,6 @@ class Data():
     def __init__(self) -> None:
         pass
     
-    def findList(self,root:str,text_to_find:str) -> list[list[str]]:
-        """Return a list of a list of string if we find the text in csv file"""
-        with open(root,'r') as csv_file:
-            reader = csv.reader(csv_file,delimiter=';')
-            list_reader = list(reader)
-            result_list = []
-            for row in list_reader[1:]:
-                for e in row: 
-                    if text_to_find.lower() in e.lower():
-                        result_list.append(row)
-                        break
-        return(result_list)
-    
     def getDataList(self,root) -> list[list[str]]:
         # return a list of file row with header
         with open(root,'r')as csv_file:
@@ -67,4 +54,5 @@ class Roots():
     def __init__(self) -> None:
         self.historic = './data/historic.csv'
         self.adress = './data/adress.csv'
+        self.spec_adress = './data/spec_adress.csv'
 
