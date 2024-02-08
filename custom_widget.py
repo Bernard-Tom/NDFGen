@@ -1,17 +1,21 @@
 from PyQt5.QtWidgets import (
     QWidget, QLineEdit, QLabel, QPushButton, QVBoxLayout, 
     QGroupBox,QListWidget,QButtonGroup,QRadioButton,QFormLayout,
-    QCheckBox,QGridLayout,QListWidgetItem
+    QCheckBox,QGridLayout,QListWidgetItem,QSpacerItem,QSizePolicy,
+    QCompleter
     )
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal,Qt
 
 from custom_object import Travel
 from custom_object import *
 
 class AdressEditorWidget(QGroupBox):
+    """Custom wigdget used to edit Adress in Travel Editor Window"""
     def __init__(self,title) -> None:
         super().__init__()
         self.root = Roots()
+        self.data = Data()
+        self.adress_list = self.data.getAdressList(self.root.adress)[1:]
         self.setTitle(title)
         self.UIComponents()
         self.setStyleSheet('QGroupBox:title {'
@@ -36,24 +40,23 @@ class AdressEditorWidget(QGroupBox):
         self.btn_grp.addButton(self.local_btn)
         self.btn_grp.addButton(self.school_btn)
 
-        self.search_bar = SearchBarWidget(self.root.adress)
-        self.search_bar.search_signal.connect(self.onSearchSignal)
-        self.list_widget = AdressListWidget(self.root.adress)
+        self.search_bar = QLineEdit()
+
+        self.completer = QCompleter(self.adress_list)
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.search_bar.setCompleter(self.completer)
 
         self.main_layout.addWidget(self.house_btn)
         self.main_layout.addWidget(self.local_btn)
         self.main_layout.addWidget(self.school_btn)
         self.main_layout.addWidget(self.search_bar)
-        self.main_layout.addWidget(self.list_widget)
-
-    def onSearchSignal(self) -> None:
-        self.list_widget.update(self.search_bar.result_list)
 
     def getAdress(self) -> str:
-        return(self.search_bar.getAdress())
+        return(self.search_bar.text())
 
 class PrmtrEditorWidget(QGroupBox):
-    def __init__(self):
+    """Custom wigdget used to edit prmtrs in Travel Editor Window"""
+    def __init__(self) -> None:
         super().__init__()
         self.setTitle('Parametres')
         self.UIComponents()
@@ -64,7 +67,8 @@ class PrmtrEditorWidget(QGroupBox):
                  'padding-right: 10px; }'
                  )
 
-    def UIComponents(self):
+    def UIComponents(self) -> None:
+        """Set graphical components"""
         self.main_layout = QFormLayout()
         self.setLayout(self.main_layout)
         
@@ -88,7 +92,7 @@ class PrmtrEditorWidget(QGroupBox):
         return(return_state)
 
 class TravelWidget(QGroupBox):
-    """Custom wigdget used to show Travel in list"""
+    """Custom wigdget used to show Travel object"""
     edit_signal = pyqtSignal()
     def __init__(self,travel:Travel) -> None:
         super().__init__()
@@ -126,60 +130,55 @@ class TravelWidget(QGroupBox):
         layout.addWidget(self.rtrn_label,1,1)
         layout.addWidget(edit_btn,0,2,3,1)
 
-    def onEditClicked(self):
+    def onEditClicked(self) -> None:
         self.edit_signal.emit()
 
-class SearchBarWidget(QLineEdit):
-    """
-    Class used to implement QLineEdit search bar
-    ------
-    Can be used for Adress or Travel
-    Emit a signal when it find his text in csv file
-    """
-    search_signal = pyqtSignal()
-    def __init__(self,root:str) -> None:
-        super().__init__()
-        self.root = root
-        self.data = Data()
-        self.textChanged.connect(self.ontextChanged)
-
-    def ontextChanged(self) -> None:
-        """When text changed get list result from csv serach"""
-        if self.text() == '':
-            self.result_list = self.data.getAllTravelList(self.root)[1:]
-        else: self.result_list = self.data.findList(self.root,self.text()) # [['a','b'],['a','b]]
-        self.search_signal.emit()
-
-    def getAdress(self) -> str:
-        return(self.text())
-
-class AdressListWidget(QListWidget):
-    def __init__(self,root) -> None:
-        super().__init__()
-        self.data = Data()
-        self.root = root
-        self.setFixedHeight(60)
-
-    def update(self,return_list:list) -> None:
-        self.clear()
-        for e in return_list:
-            item = QListWidgetItem(e[0])
-            self.addItem(item)
+    def getDataString(self) -> str:
+        return(self.travel.getString())
 
 class TravelListWidget(QWidget):
-    """Class used to show the list of Travel list"""
+    """Custom Widget used to show the list of Travel widget list"""
     def __init__(self,root) -> None:
         super().__init__()
         self.root = root
+        self.data = Data()
         self.UIComponents()
 
     def UIComponents(self) -> None:
         """Set graphical components"""
         self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+        self.updateLayout()
 
-    def getWidgetList(self,root) -> list:
-        """Get all data from file throw searchbar and add to layout"""
+    def getWidgetList(self) -> list[TravelWidget]:
+        """Get all row list from csv file"""
         widget_list = []
-        for e in self.data.getAllTravelList(self.root)[1:]:
+        for e in self.data.getDataList(self.root)[1:]:
             widget_list.append(TravelWidget(Travel(e)))
         return(widget_list)
+    
+    def updateLayout(self) -> None:
+        """Delete all widget and add new widget from file reading"""
+        self.widget_list = self.getWidgetList()
+        if self.main_layout.count() != 0:
+            for i in range(self.main_layout.count()):
+                item = self.main_layout.itemAt(i)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+                else: self.main_layout.removeItem(item)
+                    
+        for widget in self.widget_list:
+            self.main_layout.addWidget(widget)
+        spacer = QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.main_layout.addItem(spacer)
+
+        print(self.main_layout.count())
+
+    def updateDisplay(self,text_to_find:str) -> None:      
+        """Show and hide widgets"""
+        for widget in self.widget_list:
+            print(widget.travel.getString().lower())
+            if text_to_find.lower() in widget.travel.getString().lower():
+                widget.setVisible(True)
+            else : widget.setVisible(False)
