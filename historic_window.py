@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import (
     QWidget,QLineEdit,QPushButton,QScrollArea,QHBoxLayout,
-    QVBoxLayout,QSpacerItem,QSizePolicy
+    QVBoxLayout
     )
-from PyQt5.QtCore import  Qt, pyqtSignal
+from PyQt5.QtCore import  pyqtSignal
 
 from custom_widget import *
 
@@ -35,12 +35,13 @@ class TravelEditorWin(QWidget):
         end = self.end_editor.getAdress()
         date = self.prmtr_editor.getDate()
         distance = self.prmtr_editor.getDistance()
+        price = self.prmtr_editor.getPrice()
         return_state = self.prmtr_editor.getreturnState()
-        return(Travel([date,start,end,distance,return_state])) # A modifier
+        return(Travel([date,start,end,distance,price,return_state])) # A modifier
 
     def save(self):
         travel = self.getUserTravel()
-        self.data.saveTravel(self.root.historic,travel.getList()) # A modifier
+        self.data.saveTravel(self.root.historic,travel.list) # A modifier
         self.close_signal.emit()
 
 class HistoricWin(QWidget):

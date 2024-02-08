@@ -85,10 +85,12 @@ class PrmtrEditorWidget(QGroupBox):
         
         self.date_edit = QLineEdit()
         self.distance_edit = QLineEdit()
+        self.price_edit = QLineEdit()
         self.return_btn = QCheckBox('Aller / Retour')
 
         self.main_layout.addRow('Date',self.date_edit)
         self.main_layout.addRow('Distance',self.distance_edit)
+        self.main_layout.addRow('Prix Kilométrique',self.price_edit)
         self.main_layout.addRow(self.return_btn)
 
     def getDate(self) -> str:
@@ -96,7 +98,10 @@ class PrmtrEditorWidget(QGroupBox):
     
     def getDistance(self) -> str:
         return(self.distance_edit.text())
-    
+
+    def getPrice(self) -> str:
+        return(self.price_edit.text())
+
     def getreturnState(self) -> str:
         if self.return_btn.isChecked(): return_state = 'true'
         else: return_state = 'false'
@@ -129,6 +134,7 @@ class TravelWidget(QGroupBox):
         self.start_label = QLabel(self.travel.start)
         self.end_label = QLabel(self.travel.end)
         self.distance_label = QLabel(self.travel.distance)
+        self.price_label = QLabel(self.travel.price)
         self.rtrn_label = QLabel(self.return_txt)
 
         edit_btn = QPushButton('...')
@@ -139,7 +145,8 @@ class TravelWidget(QGroupBox):
         layout.addWidget(self.end_label,0,1)
         layout.addWidget(self.distance_label,1,0)
         layout.addWidget(self.rtrn_label,1,1)
-        layout.addWidget(edit_btn,0,2,3,1)
+        layout.addWidget(self.price_label,0,2)
+        layout.addWidget(edit_btn,1,2)
 
     def onEditClicked(self) -> None:
         self.edit_signal.emit()

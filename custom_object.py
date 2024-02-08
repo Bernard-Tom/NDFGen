@@ -6,17 +6,19 @@ class Travel(): # A modifier
     Attributes : rtrn_state = 'true' or 'false
     """
     def __init__(self,list:list) -> None:
+        self.list = list
         self.date = list[0]
         self.start = list[1]
         self.end = list[2]
         self.distance = list[3]
-        self.rtrn_state = list[4]
+        self.price = list[4]
+        self.rtrn_state = list[5]
     
     def getList(self) -> list:
-        return([self.date,self.start,self.end,self.distance,self.rtrn_state])
+        return(self.list)
     
     def getString(self) ->str:
-        return(' '.join(self.getList()[:3]))  # without distance and rtrn_state
+        return(' '.join(self.list[:3]))  # without distance and rtrn_state
     
 class Data():
     """A class used to get and set saved file datas"""    
