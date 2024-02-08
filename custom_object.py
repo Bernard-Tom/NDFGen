@@ -1,6 +1,6 @@
 import csv 
 
-class Travel():
+class Travel(): # A modifier
     """
     A class used to represent a Travel
     Attributes : rtrn_state = 'true' or 'false
@@ -14,6 +14,9 @@ class Travel():
     
     def getList(self) -> list:
         return([self.date,self.start,self.end,self.distance,self.rtrn_state])
+    
+    def getString(self) ->str:
+        return(' '.join(self.getList()))
     
 class Data():
     """A class used to get and set saved file datas"""    

@@ -1,6 +1,8 @@
 import sys
+from PyQt5.QtWidgets import (
+    QWidget,QMainWindow,QApplication, QHBoxLayout,QStackedWidget
+    )
 
-from PyQt6.QtWidgets import *
 from historic_window import *
 
 class MainWindow(QMainWindow):
@@ -17,7 +19,7 @@ class MainWindow(QMainWindow):
         main_widget.setLayout(layout)
         self.setCentralWidget(main_widget)
 
-        stackWidget = QStackedWidget(self)
+        stackWidget = QStackedWidget()
         self.historic_win = HistoricWin()
         stackWidget.addWidget(self.historic_win)
         layout.addWidget(stackWidget)

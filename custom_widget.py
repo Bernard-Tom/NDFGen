@@ -1,6 +1,10 @@
-from PyQt6.QtWidgets import *
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import QWidget
+from PyQt5.QtWidgets import (
+    QWidget, QLineEdit, QLabel, QPushButton, QVBoxLayout, 
+    QGroupBox,QListWidget,QButtonGroup,QRadioButton,QFormLayout,
+    QCheckBox,QGridLayout,QListWidgetItem
+    )
+from PyQt5.QtCore import pyqtSignal
+
 from custom_object import Travel
 from custom_object import *
 
@@ -95,6 +99,7 @@ class TravelWidget(QGroupBox):
         self.setStyleSheet("QGroupBox {border: 2px solid #000000;}")
         self.setFixedHeight(100)
         self.setFixedWidth(500)
+        self.setContentsMargins(10,10,10,10)
 
     def setRtrnState(self) -> None:
         if self.travel.rtrn_state == 'true': self.return_txt='Aller Retour'
@@ -140,7 +145,9 @@ class SearchBarWidget(QLineEdit):
 
     def ontextChanged(self) -> None:
         """When text changed get list result from csv serach"""
-        self.result_list = self.data.findList(self.root,self.text()) # [['a','b'],['a','b]]
+        if self.text() == '':
+            self.result_list = self.data.getAllTravelList(self.root)[1:]
+        else: self.result_list = self.data.findList(self.root,self.text()) # [['a','b'],['a','b]]
         self.search_signal.emit()
 
     def getAdress(self) -> str:
@@ -160,24 +167,19 @@ class AdressListWidget(QListWidget):
             self.addItem(item)
 
 class TravelListWidget(QWidget):
+    """Class used to show the list of Travel list"""
     def __init__(self,root) -> None:
         super().__init__()
-        self.data = Data()
         self.root = root
         self.UIComponents()
 
     def UIComponents(self) -> None:
         """Set graphical components"""
         self.main_layout = QVBoxLayout()
-        self.setLayout(self.main_layout)
-        self.update(self.data.getAllTravelList(self.root)[1:])
 
-    def update(self,return_list:list) -> None:
-        """Delete all widgets of layout then add new widgets from travel_list"""
-        if self.main_layout.count() != 0:  
-            for i in range(self.main_layout.count()):
-                self.main_layout.itemAt(i).widget().deleteLater()
-        for e in return_list:
-            travel = Travel(e)
-            travel_widget = TravelWidget(travel)
-            self.main_layout.addWidget(travel_widget)
+    def getWidgetList(self,root) -> list:
+        """Get all data from file throw searchbar and add to layout"""
+        widget_list = []
+        for e in self.data.getAllTravelList(self.root)[1:]:
+            widget_list.append(TravelWidget(Travel(e)))
+        return(widget_list)
