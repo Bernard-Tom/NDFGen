@@ -22,27 +22,44 @@ class TravelEditorWin(QWidget):
         self.end_editor = AdressEditorWidget('end')
         self.prmtr_editor = PrmtrEditorWidget()
 
+        self.err_label= QLabel()
+        self.err_label.setStyleSheet('color:red')
+        self.err_label.setAlignment(Qt.AlignHCenter)
+
         save_btn = QPushButton('Enregistrer')
         save_btn.clicked.connect(self.save)
 
         main_layout.addWidget(self.start_editor)
         main_layout.addWidget(self.end_editor)
         main_layout.addWidget(self.prmtr_editor)
+        main_layout.addWidget(self.err_label)
         main_layout.addWidget(save_btn)
 
-    def getUserTravel(self) -> Travel:
-        start = self.start_editor.getAdress()
-        end = self.end_editor.getAdress()
-        date = self.prmtr_editor.getDate()
-        distance = self.prmtr_editor.getDistance()
-        price = self.prmtr_editor.getPrice()
-        return_state = self.prmtr_editor.getreturnState()
-        return(Travel([date,start,end,distance,price,return_state])) # A modifier
+    def getUserTravel(self) -> Travel | bool:
+        """Try if user data are correct"""
+        if self.start_editor.tryUserData() and self.end_editor.tryUserData():
+            start = self.start_editor.getAdress()
+            end = self.end_editor.getAdress() 
+            if self.prmtr_editor.tryUserData():
+                date = self.prmtr_editor.getDate()
+                distance = self.prmtr_editor.getDistance()
+                price = self.prmtr_editor.getPrice()
+                return_state = self.prmtr_editor.getreturnState()
+                travel = Travel([date,start,end,distance,price,return_state])
+                self.err_label.setText('')
+                return(travel)
+            else: 
+                self.err_label.setText('Prmtr format error')
+                return(False)
+        else:
+            self.err_label.setText('adresse format error')
+            return(False)
 
     def save(self):
-        travel = self.getUserTravel()
-        self.data.saveTravel(self.root.historic,travel.list) # A modifier
-        self.close_signal.emit()
+        if self.getUserTravel() != False:
+            travel = self.getUserTravel()
+            self.data.saveTravel(self.root.historic,travel.list) # A modifier
+            self.close_signal.emit()
 
 class HistoricWin(QWidget):
     def __init__(self) -> None:

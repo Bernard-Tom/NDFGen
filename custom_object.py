@@ -1,4 +1,5 @@
 import csv 
+from datetime import datetime
 
 class Travel(): # A modifier
     """
@@ -47,9 +48,22 @@ class Data():
             for row in data:
                 writer.writerow(row)
 
+    def getSortedlList(self,list:list) -> list:
+        """Return a list sorted throw the date"""
+        date_dict = {}
+        for data in list: 
+            date_dict[datetime.strptime(data[0],'%d/%m/%Y')] = data
+
+        for e,i in zip (sorted(date_dict),range(len(sorted(date_dict)))):
+            list[i] = date_dict[e]
+        return list
+
     def saveTravel(self,root,row:list) -> None:
         data = self.getDataList(root)
         data.append(row)
+        sorted_data = self.getSortedlList(data[1:]) # no take the header
+        for i in range(len(data)-1):
+            data[i+1] = sorted_data[i]
         self.writeData(root,data)
 
 class Roots():

@@ -32,13 +32,16 @@ class AdressEditorWidget(QGroupBox):
 
         self.btn_grp = QButtonGroup()
         self.btn_grp.setExclusive(True)
-        self.house_btn = QRadioButton('Maison')
-        self.house_btn.clicked.connect(self.onBtnClicked)
-        self.local_btn = QRadioButton('Local')
-        self.local_btn.clicked.connect(self.onBtnClicked)
+        self.house_btn = QRadioButton('house')
+        self.local_btn = QRadioButton('local')
+        self.school_btn = QRadioButton('school')
+        self.school_btn.setChecked(True)
 
         self.btn_grp.addButton(self.house_btn)
         self.btn_grp.addButton(self.local_btn)
+        self.btn_grp.addButton(self.school_btn)
+
+        self.btn_grp.buttonClicked.connect(lambda:self.onBtnClicked(self.btn_grp.checkedButton()))
 
         self.search_bar = QLineEdit()
 
@@ -48,6 +51,7 @@ class AdressEditorWidget(QGroupBox):
 
         self.main_layout.addWidget(self.house_btn)
         self.main_layout.addWidget(self.local_btn)
+        self.main_layout.addWidget(self.school_btn)
         self.main_layout.addWidget(self.search_bar)
 
     def getSpecAdress(self,string_to_find) -> list:
@@ -55,15 +59,22 @@ class AdressEditorWidget(QGroupBox):
             if string_to_find in list:
                 return(list[1])
 
-    def onBtnClicked(self)-> None:
-        if self.house_btn.isChecked():
-            adress = self.getSpecAdress('house')
-        if self.local_btn.isChecked():
-            adress = self.getSpecAdress('local')
-        self.search_bar.setText(adress)
+    def onBtnClicked(self,btn:QRadioButton)-> None:
+        if btn == self.house_btn or btn == self.local_btn:
+             adress = self.getSpecAdress(btn.text())
+             self.search_bar.setText(adress)
+             self.search_bar.setEnabled(False)
+        if btn == self.school_btn:
+            self.search_bar.setEnabled(True)
+            self.search_bar.setText('')
 
     def getAdress(self) -> str:
         return(self.search_bar.text())
+
+    def tryUserData(self) -> bool:
+        if self.search_bar.text() != '':
+            return(True)
+        else: return(False)
 
 class PrmtrEditorWidget(QGroupBox):
     """Custom wigdget used to edit prmtrs in Travel Editor Window"""
@@ -93,7 +104,8 @@ class PrmtrEditorWidget(QGroupBox):
         self.main_layout.addRow('Prix Kilométrique',self.price_edit)
         self.main_layout.addRow(self.return_btn)
 
-    def getDate(self) -> str:
+####  Get Data
+    def getDate(self) -> str | bool:
         return(self.date_edit.text())
     
     def getDistance(self) -> str:
@@ -106,6 +118,31 @@ class PrmtrEditorWidget(QGroupBox):
         if self.return_btn.isChecked(): return_state = 'true'
         else: return_state = 'false'
         return(return_state)
+    
+#### Try Data
+    def tryDate(self,string:str) -> bool:
+        if len(string) != 10: 
+            return(False)
+        if [2,5] != [n for (n,e) in enumerate(string) if e =='/']:
+            return(False)
+        try:
+            int(string[:2])
+            int(string[3:5])
+            int(string[6:10])
+            return(True)
+        except: return(False)
+
+    def tryInt(self,string) -> bool:
+        try:
+            int(string)
+            return(True)
+        except: return(False)
+
+    def tryUserData(self) -> bool:
+        if self.tryDate(self.date_edit.text()) and self.tryInt(self.distance_edit.text()) and self.tryInt(self.price_edit.text()):
+            return(True)
+        else:
+            return(False)
 
 class TravelWidget(QGroupBox):
     """Custom wigdget used to show Travel object"""
@@ -191,12 +228,9 @@ class TravelListWidget(QWidget):
         spacer = QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.main_layout.addItem(spacer)
 
-        print(self.main_layout.count())
-
     def updateDisplay(self,text_to_find:str) -> None:      
         """Show and hide widgets"""
         for widget in self.widget_list:
-            print(widget.travel.getString().lower())
             if text_to_find.lower() in widget.travel.getString().lower():
                 widget.setVisible(True)
             else : widget.setVisible(False)
