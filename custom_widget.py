@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtCore import pyqtSignal,Qt
 
-from custom_object import Travel
 from custom_object import *
 
 class AdressEditorWidget(QGroupBox):
@@ -68,6 +67,9 @@ class AdressEditorWidget(QGroupBox):
             self.search_bar.setEnabled(True)
             self.search_bar.setText('')
 
+    def setAdress(self,adress:str) ->None:
+        self.search_bar.setText(adress)
+
     def getAdress(self) -> str:
         return(self.search_bar.text())
 
@@ -104,6 +106,21 @@ class PrmtrEditorWidget(QGroupBox):
         self.main_layout.addRow('Prix Kilométrique',self.price_edit)
         self.main_layout.addRow(self.return_btn)
 
+####  Set Data
+    def setDate(self,date:str) -> None:
+        self.date_edit.setText(date)
+
+    def setDistance(self,distance:str) -> None:
+        self.distance_edit.setText(distance)
+
+    def setPrice(self,price) -> None:
+        self.price_edit.setText(price)
+
+    def setReturnState(self,rtrn_state:str) -> None:
+        if rtrn_state == 'true':
+            self.return_btn.setChecked(True)
+        else: self.return_btn.setChecked(False)
+
 ####  Get Data
     def getDate(self) -> str | bool:
         return(self.date_edit.text())
@@ -114,7 +131,7 @@ class PrmtrEditorWidget(QGroupBox):
     def getPrice(self) -> str:
         return(self.price_edit.text())
 
-    def getreturnState(self) -> str:
+    def getReturnState(self) -> str:
         if self.return_btn.isChecked(): return_state = 'true'
         else: return_state = 'false'
         return(return_state)
@@ -186,13 +203,17 @@ class TravelWidget(QGroupBox):
         layout.addWidget(edit_btn,1,2)
 
     def onEditClicked(self) -> None:
-        self.edit_signal.emit()
+        pass
+
+    def onEditorClose(self) -> None:
+        pass
 
     def getDataString(self) -> str:
         return(self.travel.getString())
 
 class TravelListWidget(QWidget):
     """Custom Widget used to show the list of Travel widget list"""
+    edit_signal = pyqtSignal(Travel)
     def __init__(self,root) -> None:
         super().__init__()
         self.root = root
@@ -209,7 +230,10 @@ class TravelListWidget(QWidget):
         """Get all row list from csv file"""
         widget_list = []
         for e in self.data.getDataList(self.root)[1:]:
-            widget_list.append(TravelWidget(Travel(e)))
+            travel = Travel(e)
+            travel_widget = TravelWidget(travel)
+            travel_widget.edit_signal.connect(lambda:self.editSignal(travel))
+            widget_list.append(travel_widget)
         return(widget_list)
     
     def updateLayout(self) -> None:
@@ -234,3 +258,6 @@ class TravelListWidget(QWidget):
             if text_to_find.lower() in widget.travel.getString().lower():
                 widget.setVisible(True)
             else : widget.setVisible(False)
+
+    def editSignal(self,travel:Travel) -> None:
+        self.edit_signal.emit(travel)

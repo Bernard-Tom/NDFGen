@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtCore import  pyqtSignal
 
+from custom_object import *
 from custom_widget import *
 
 class TravelEditorWin(QWidget):
@@ -35,6 +36,14 @@ class TravelEditorWin(QWidget):
         main_layout.addWidget(self.err_label)
         main_layout.addWidget(save_btn)
 
+    def setUserTravel(self,travel:Travel):
+        self.start_editor.setAdress(travel.start)
+        self.end_editor.setAdress(travel.end)
+        self.prmtr_editor.setDate(travel.date)
+        self.prmtr_editor.setDistance(travel.distance)
+        self.prmtr_editor.setPrice(travel.price)
+        self.prmtr_editor.setReturnState(travel.rtrn_state)
+
     def getUserTravel(self) -> Travel | bool:
         """Try if user data are correct"""
         if self.start_editor.tryUserData() and self.end_editor.tryUserData():
@@ -44,7 +53,7 @@ class TravelEditorWin(QWidget):
                 date = self.prmtr_editor.getDate()
                 distance = self.prmtr_editor.getDistance()
                 price = self.prmtr_editor.getPrice()
-                return_state = self.prmtr_editor.getreturnState()
+                return_state = self.prmtr_editor.getReturnState()
                 travel = Travel([date,start,end,distance,price,return_state])
                 self.err_label.setText('')
                 return(travel)
@@ -100,10 +109,10 @@ class HistoricWin(QWidget):
         self.travel_list_widget.updateDisplay(self.search_bar.text())
 
     def addTravel(self) -> None:
-        self.editor_win = TravelEditorWin()
-        self.editor_win.show()
-        self.editor_win.close_signal.connect(self.onEditorClose)
+        self.travel_editor_win = TravelEditorWin()
+        self.travel_editor_win.show()
+        self.travel_editor_win.close_signal.connect(self.onEditorClose)
 
     def onEditorClose(self) -> None:
-        self.editor_win.close()
+        self.travel_editor_win.close()
         self.travel_list_widget.updateLayout()
