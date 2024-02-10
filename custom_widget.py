@@ -207,7 +207,7 @@ class TravelWidget(QGroupBox):
 
         self.start_name_label = QLabel(self.travel.start_adress.name)
         self.start_name_label.setAlignment(Qt.AlignHCenter)
-        self.start_street_label = QLabel(self.travel.start_adress.street+' '+self.travel.start_adress.postal+' '+self.travel.start_adress.city)
+        self.start_street_label = QLabel(self.travel.start_adress.getStreetString())
         self.start_street_label.setAlignment(Qt.AlignHCenter)
 
         self.arrow_label = QLabel('-->')
@@ -215,7 +215,7 @@ class TravelWidget(QGroupBox):
 
         self.end_name_label = QLabel(self.travel.end_adress.name)
         self.end_name_label.setAlignment(Qt.AlignHCenter)
-        self.end_street_label = QLabel(self.travel.end_adress.street+' '+self.travel.end_adress.postal+' '+self.travel.end_adress.city)
+        self.end_street_label = QLabel(self.travel.end_adress.getStreetString())
         self.end_street_label.setAlignment(Qt.AlignHCenter)
 
         self.distance_label = QLabel(self.travel.distance+' km')
@@ -248,9 +248,6 @@ class TravelWidget(QGroupBox):
 
     def onEditorClose(self) -> None:
         pass
-
-    def getDataString(self) -> str:
-        return(self.travel.getString())
 
 class TravelListWidget(QWidget):
     """Custom Widget used to show the list of Travel widget list"""
@@ -294,9 +291,11 @@ class TravelListWidget(QWidget):
     def updateDisplay(self,text_to_find:str) -> None:      
         """Show and hide widgets"""
         for widget in self.widget_list:
-            if text_to_find.lower() in widget.travel.getString().lower():
+            start_string = widget.travel.start_adress.getFullString().lower()
+            end_string = widget.travel.end_adress.getFullString().lower()
+            if text_to_find.lower() in start_string or text_to_find.lower() in end_string:
                 widget.setVisible(True)
-            else : widget.setVisible(False)
+            else: widget.setVisible(False)
 
     def editSignal(self,travel:Travel) -> None:
         self.edit_signal.emit(travel)

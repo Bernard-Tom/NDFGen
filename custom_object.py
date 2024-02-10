@@ -8,6 +8,12 @@ class Adress():
         self.postal=postal
         self.city=city
 
+    def getFullString(self) -> str:
+        return(self.name+' '+self.street+' '+self.postal+' '+self.city)
+
+    def getStreetString(self) -> str:
+        return(self.street+' '+self.postal+' '+self.city)
+
 class Travel(): # A modifier
     """
     A class used to represent a Travel
