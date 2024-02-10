@@ -28,7 +28,9 @@ class Travel(): # A modifier
         self.rtrn_state = rtrn_state
     
     def getList(self) -> list:
-        return(self.list)
+        return([self.date,self.start_adress.name,self.start_adress.street,self.start_adress.postal,self.start_adress.city,
+                self.end_adress.name,self.end_adress.street,self.end_adress.postal,self.end_adress.city,
+                self.distance,self.price,self.rtrn_state])
     
     def getString(self) ->str:
         return(' '.join(self.list[:3]))  # without distance and rtrn_state
@@ -91,12 +93,16 @@ class Data():
             list[i] = date_dict[e]
         return list
 
-    def saveTravel(self,root,travel:Travel) -> None:
+    def saveTravel(self,root,old_travel:Travel,travel:Travel) -> None:
         data = self.getDataList(root)
         start_adress = travel.start_adress
         end_adress = travel.end_adress
         new_row = [travel.date,start_adress.name,start_adress.street,start_adress.postal,start_adress.city,end_adress.name,end_adress.street,end_adress.postal,end_adress.city,travel.distance,travel.price,travel.rtrn_state]
-        data.append(new_row)
+        if old_travel != None:
+            old_travel_list = old_travel.getList()
+            if old_travel_list in data:
+                data[data.index(old_travel_list)] = new_row # +1 beacause data return header too 
+        else: data.append(new_row)
         sorted_data = self.getSortedlList(data[1:]) # no take the header
         for i in range(len(data)-1):
             data[i+1] = sorted_data[i]

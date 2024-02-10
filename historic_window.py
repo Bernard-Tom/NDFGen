@@ -60,7 +60,7 @@ class TravelEditorWin(QWidget):
     def save(self):
         if self.getUserTravel() != False:
             travel = self.getUserTravel()
-            self.data.saveTravel(self.root.historic,travel) # A modifier
+            self.data.saveTravel(self.root.historic,travel)
             self.close_signal.emit()
         else: self.err_label.setText('format error')
 

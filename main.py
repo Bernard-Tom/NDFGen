@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
     QWidget,QMainWindow,QApplication, QHBoxLayout,QStackedWidget
     )
 
-from historic_window import *
+from custom_widget import *
 
 class MainWindow(QMainWindow):
     """Main window of the application"""
