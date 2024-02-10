@@ -55,13 +55,18 @@ class Data():
                 travel_list.append(travel)
         return(travel_list) 
 
-    def getAdressList(self,root) -> list[str]:
+    def getAdressList(self,root) -> list[Adress]:
         with open(root,'r')as csv_file:
             adress_list = []
-            reader = csv.reader(csv_file,delimiter=';')
+            reader = csv.DictReader(csv_file,delimiter=';')
             list_reader = list(reader)
             for row in list_reader:
-                adress_list.append(row[0])
+                name = row['name']
+                street = row['street']
+                postal = row['postal']
+                city = row['city']
+                adress = Adress(name,street,postal,city)
+                adress_list.append(adress)
         return(adress_list)   
     
     def writeData(self,root:str,data:list) -> None:

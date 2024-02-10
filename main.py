@@ -10,7 +10,7 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle('NDFGen')
-        self.setFixedWidth(600)
+        self.setFixedWidth(800)
         self.UIComponents()
 
     def UIComponents(self)-> None:

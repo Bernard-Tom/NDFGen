@@ -14,7 +14,7 @@ class AdressEditorWidget(QGroupBox):
         super().__init__()
         self.root = Roots()
         self.data = Data()
-        self.adress_list = self.data.getDataList(self.root.adress)
+        self.adress_list = self.data.getAdressList(self.root.adress)
         self.setTitle(title)
         self.UIComponents()
 
@@ -41,7 +41,7 @@ class AdressEditorWidget(QGroupBox):
         self.btn_grp.addButton(self.local_btn)
         self.btn_grp.addButton(self.new_btn)
 
-        self.btn_grp.buttonClicked.connect(lambda:self.onBtnClicked(self.btn_grp.checkedButton()))
+        self.btn_grp.buttonClicked.connect(self.onBtnClicked)
         self.btn_layout.addWidget(self.new_btn)
         self.btn_layout.addWidget(self.house_btn)
         self.btn_layout.addWidget(self.local_btn)
@@ -63,17 +63,27 @@ class AdressEditorWidget(QGroupBox):
         self.main_layout.addLayout(self.btn_layout)
         self.main_layout.addLayout(self.form_layout)
 
-    def onBtnClicked(self,btn:QRadioButton)-> None:
+    def onBtnClicked(self)-> None:
+        btn = self.btn_grp.checkedButton()
         if btn == self.house_btn or btn == self.local_btn:
-            pass
+            for adress in self.adress_list:
+                if adress.name == btn.text():
+                    self.setAdress(adress)
+            self.enableFormLay(False)
         if btn == self.new_btn:
-            pass
+            adress = Adress('','','','')
+            self.setAdress(adress)
+            self.enableFormLay(True)
 
-    def setAdress(self,adress:Adress) ->None:
-        self.name_edit.text(adress.name)
-        self.street_edit.text(adress.street)
-        self.postal_edit.text(adress.postal)
-        self.city_edit.text(adress.city)
+    def enableFormLay(self,state:bool) -> None:
+        for i in range(self.form_layout.count()):
+            self.form_layout.itemAt(i).widget().setEnabled(state)
+
+    def setAdress(self,adress:Adress) -> None:
+        self.name_edit.setText(adress.name)
+        self.street_edit.setText(adress.street)
+        self.postal_edit.setText(adress.postal)
+        self.city_edit.setText(adress.city)
 
     def getAdress(self) -> Adress:
         name = self.name_edit.text()
@@ -111,9 +121,9 @@ class PrmtrEditorWidget(QGroupBox):
         self.price_edit = QLineEdit()
         self.return_btn = QCheckBox('Aller / Retour')
 
-        self.main_layout.addRow('Date',self.date_edit)
-        self.main_layout.addRow('Distance',self.distance_edit)
-        self.main_layout.addRow('Prix Kilométrique',self.price_edit)
+        self.main_layout.addRow('Date : DD/MM/YYYY',self.date_edit)
+        self.main_layout.addRow('Distance : km',self.distance_edit)
+        self.main_layout.addRow('Prix Kilométrique : euro/km',self.price_edit)
         self.main_layout.addRow(self.return_btn)
 
 ####  Set Data
@@ -131,13 +141,11 @@ class PrmtrEditorWidget(QGroupBox):
             self.return_btn.setChecked(True)
         else: self.return_btn.setChecked(False)
 
-
     def tryInt(self,string) -> bool:
         try:
             int(string)
             return(True)
         except: return(False)
-
 
 ####  Get Data
     def getDate(self) -> str | bool:
@@ -168,7 +176,6 @@ class PrmtrEditorWidget(QGroupBox):
         else: return_state = 'false'
         return(return_state)
     
-
 class TravelWidget(QGroupBox):
     """Custom wigdget used to show Travel object"""
     edit_signal = pyqtSignal()
@@ -180,7 +187,7 @@ class TravelWidget(QGroupBox):
         self.UIComponents()
         self.setStyleSheet("QGroupBox {border: 2px solid #000000;}")
         self.setFixedHeight(100)
-        self.setFixedWidth(500)
+        self.setFixedWidth(700)
         self.setContentsMargins(10,10,10,10)
 
     def setRtrnState(self) -> None:
@@ -200,7 +207,7 @@ class TravelWidget(QGroupBox):
 
         self.start_name_label = QLabel(self.travel.start_adress.name)
         self.start_name_label.setAlignment(Qt.AlignHCenter)
-        self.start_street_label = QLabel(self.travel.start_adress.street)
+        self.start_street_label = QLabel(self.travel.start_adress.street+' '+self.travel.start_adress.postal+' '+self.travel.start_adress.city)
         self.start_street_label.setAlignment(Qt.AlignHCenter)
 
         self.arrow_label = QLabel('-->')
@@ -208,7 +215,7 @@ class TravelWidget(QGroupBox):
 
         self.end_name_label = QLabel(self.travel.end_adress.name)
         self.end_name_label.setAlignment(Qt.AlignHCenter)
-        self.end_street_label = QLabel(self.travel.end_adress.street)
+        self.end_street_label = QLabel(self.travel.end_adress.street+' '+self.travel.end_adress.postal+' '+self.travel.end_adress.city)
         self.end_street_label.setAlignment(Qt.AlignHCenter)
 
         self.distance_label = QLabel(self.travel.distance+' km')

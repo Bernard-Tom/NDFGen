@@ -51,19 +51,18 @@ class TravelEditorWin(QWidget):
         distance = self.prmtr_editor.getDistance()
         price = self.prmtr_editor.getPrice()
         return_state = self.prmtr_editor.getReturnState()
-        print(start_adress,end_adress,distance,price)
         if not(start_adress and end_adress and distance and price):
             return(False)
         else: 
             travel = Travel(date,start_adress,end_adress,distance,price,return_state)
             return(travel)
-        
 
     def save(self):
         if self.getUserTravel() != False:
             travel = self.getUserTravel()
             self.data.saveTravel(self.root.historic,travel) # A modifier
             self.close_signal.emit()
+        else: self.err_label.setText('format error')
 
 class HistoricWin(QWidget):
     def __init__(self) -> None:
