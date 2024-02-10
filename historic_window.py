@@ -19,8 +19,8 @@ class TravelEditorWin(QWidget):
         """Set graphical components"""
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
-        self.start_editor = AdressEditorWidget('start')
-        self.end_editor = AdressEditorWidget('end')
+        self.start_editor = AdressEditorWidget('Départ')
+        self.end_editor = AdressEditorWidget('Arrivée')
         self.prmtr_editor = PrmtrEditorWidget()
 
         self.err_label= QLabel()
@@ -37,37 +37,32 @@ class TravelEditorWin(QWidget):
         main_layout.addWidget(save_btn)
 
     def setUserTravel(self,travel:Travel):
-        self.start_editor.setAdress(travel.start)
-        self.end_editor.setAdress(travel.end)
+        self.start_editor.setAdress(travel.start_adress)
+        self.end_editor.setAdress(travel.end_adress)
         self.prmtr_editor.setDate(travel.date)
         self.prmtr_editor.setDistance(travel.distance)
         self.prmtr_editor.setPrice(travel.price)
         self.prmtr_editor.setReturnState(travel.rtrn_state)
-
+        
     def getUserTravel(self) -> Travel | bool:
-        """Try if user data are correct"""
-        if self.start_editor.tryUserData() and self.end_editor.tryUserData():
-            start = self.start_editor.getAdress()
-            end = self.end_editor.getAdress() 
-            if self.prmtr_editor.tryUserData():
-                date = self.prmtr_editor.getDate()
-                distance = self.prmtr_editor.getDistance()
-                price = self.prmtr_editor.getPrice()
-                return_state = self.prmtr_editor.getReturnState()
-                travel = Travel([date,start,end,distance,price,return_state])
-                self.err_label.setText('')
-                return(travel)
-            else: 
-                self.err_label.setText('Prmtr format error')
-                return(False)
-        else:
-            self.err_label.setText('adresse format error')
+        date = self.prmtr_editor.getDate()
+        start_adress = self.start_editor.getAdress()
+        end_adress = self.end_editor.getAdress()
+        distance = self.prmtr_editor.getDistance()
+        price = self.prmtr_editor.getPrice()
+        return_state = self.prmtr_editor.getReturnState()
+        print(start_adress,end_adress,distance,price)
+        if not(start_adress and end_adress and distance and price):
             return(False)
+        else: 
+            travel = Travel(date,start_adress,end_adress,distance,price,return_state)
+            return(travel)
+        
 
     def save(self):
         if self.getUserTravel() != False:
             travel = self.getUserTravel()
-            self.data.saveTravel(self.root.historic,travel.list) # A modifier
+            self.data.saveTravel(self.root.historic,travel) # A modifier
             self.close_signal.emit()
 
 class HistoricWin(QWidget):

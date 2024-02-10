@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QWidget, QLineEdit, QLabel, QPushButton, QVBoxLayout, 
     QGroupBox,QListWidget,QButtonGroup,QRadioButton,QFormLayout,
     QCheckBox,QGridLayout,QListWidgetItem,QSpacerItem,QSizePolicy,
-    QCompleter
+    QCompleter,QHBoxLayout
     )
 from PyQt5.QtCore import pyqtSignal,Qt
 
@@ -14,68 +14,78 @@ class AdressEditorWidget(QGroupBox):
         super().__init__()
         self.root = Roots()
         self.data = Data()
-        self.adress_list = self.data.getAdressList(self.root.adress)[1:]
+        self.adress_list = self.data.getDataList(self.root.adress)
         self.setTitle(title)
         self.UIComponents()
+
+    def UIComponents(self) -> None:
+        """Set graphical components"""
         self.setStyleSheet('QGroupBox:title {'
                  'subcontrol-origin: margin;'
                  'subcontrol-position: top center;'
                  'padding-left: 10px;'
                  'padding-right: 10px; }'
                  )
-
-    def UIComponents(self) -> None:
-        """Set graphical components"""
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
+        self.btn_layout = QHBoxLayout()
         self.btn_grp = QButtonGroup()
         self.btn_grp.setExclusive(True)
         self.house_btn = QRadioButton('house')
         self.local_btn = QRadioButton('local')
-        self.school_btn = QRadioButton('school')
-        self.school_btn.setChecked(True)
+        self.new_btn = QRadioButton('new')
+        self.new_btn.setChecked(True)
 
         self.btn_grp.addButton(self.house_btn)
         self.btn_grp.addButton(self.local_btn)
-        self.btn_grp.addButton(self.school_btn)
+        self.btn_grp.addButton(self.new_btn)
 
         self.btn_grp.buttonClicked.connect(lambda:self.onBtnClicked(self.btn_grp.checkedButton()))
+        self.btn_layout.addWidget(self.new_btn)
+        self.btn_layout.addWidget(self.house_btn)
+        self.btn_layout.addWidget(self.local_btn)
 
-        self.search_bar = QLineEdit()
+        self.name_edit = QLineEdit()
+        self.street_edit = QLineEdit()
+        self.postal_edit = QLineEdit()
+        self.city_edit = QLineEdit()
 
-        self.completer = QCompleter(self.adress_list)
-        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
-        self.search_bar.setCompleter(self.completer)
+        self.form_layout = QFormLayout()
+        self.form_layout.addRow('Nom',self.name_edit)
+        self.form_layout.addRow('Adresse',self.street_edit)
+        self.form_layout.addRow('Code Postale',self.postal_edit)
+        self.form_layout.addRow('Localité',self.city_edit)
 
-        self.main_layout.addWidget(self.house_btn)
-        self.main_layout.addWidget(self.local_btn)
-        self.main_layout.addWidget(self.school_btn)
-        self.main_layout.addWidget(self.search_bar)
+        #self.completer = QCompleter(self.adress_list)
+        #self.completer.setCaseSensitivity(Qt.CaseInsensitive)
 
-    def getSpecAdress(self,string_to_find) -> list:
-        for list in self.data.getDataList(self.root.spec_adress):
-            if string_to_find in list:
-                return(list[1])
+        self.main_layout.addLayout(self.btn_layout)
+        self.main_layout.addLayout(self.form_layout)
 
     def onBtnClicked(self,btn:QRadioButton)-> None:
         if btn == self.house_btn or btn == self.local_btn:
-             adress = self.getSpecAdress(btn.text())
-             self.search_bar.setText(adress)
-             self.search_bar.setEnabled(False)
-        if btn == self.school_btn:
-            self.search_bar.setEnabled(True)
-            self.search_bar.setText('')
+            pass
+        if btn == self.new_btn:
+            pass
 
-    def setAdress(self,adress:str) ->None:
-        self.search_bar.setText(adress)
+    def setAdress(self,adress:Adress) ->None:
+        self.name_edit.text(adress.name)
+        self.street_edit.text(adress.street)
+        self.postal_edit.text(adress.postal)
+        self.city_edit.text(adress.city)
 
-    def getAdress(self) -> str:
-        return(self.search_bar.text())
-
-    def tryUserData(self) -> bool:
-        if self.search_bar.text() != '':
-            return(True)
+    def getAdress(self) -> Adress:
+        name = self.name_edit.text()
+        street = self.street_edit.text()
+        postal = self.postal_edit.text()
+        city = self.city_edit.text()
+        if name != '' and street != '' and city != '':
+            try:
+                int(postal)
+                adress = Adress(name,street,postal,city)
+                return(adress)
+            except: return(False)
         else: return(False)
 
 class PrmtrEditorWidget(QGroupBox):
@@ -121,33 +131,6 @@ class PrmtrEditorWidget(QGroupBox):
             self.return_btn.setChecked(True)
         else: self.return_btn.setChecked(False)
 
-####  Get Data
-    def getDate(self) -> str | bool:
-        return(self.date_edit.text())
-    
-    def getDistance(self) -> str:
-        return(self.distance_edit.text())
-
-    def getPrice(self) -> str:
-        return(self.price_edit.text())
-
-    def getReturnState(self) -> str:
-        if self.return_btn.isChecked(): return_state = 'true'
-        else: return_state = 'false'
-        return(return_state)
-    
-#### Try Data
-    def tryDate(self,string:str) -> bool:
-        if len(string) != 10: 
-            return(False)
-        if [2,5] != [n for (n,e) in enumerate(string) if e =='/']:
-            return(False)
-        try:
-            int(string[:2])
-            int(string[3:5])
-            int(string[6:10])
-            return(True)
-        except: return(False)
 
     def tryInt(self,string) -> bool:
         try:
@@ -155,11 +138,36 @@ class PrmtrEditorWidget(QGroupBox):
             return(True)
         except: return(False)
 
-    def tryUserData(self) -> bool:
-        if self.tryDate(self.date_edit.text()) and self.tryInt(self.distance_edit.text()) and self.tryInt(self.price_edit.text()):
-            return(True)
-        else:
+
+####  Get Data
+    def getDate(self) -> str | bool:
+        date = self.date_edit.text()
+        if len(date) != 10: 
             return(False)
+        if [2,5] != [n for (n,e) in enumerate(date) if e =='/']:
+            return(False)
+        try:
+            int(date[:2])
+            int(date[3:5])
+            int(date[6:10])
+            return(date)
+        except: return(False)
+    
+    def getDistance(self) -> str:
+        if self.tryInt(self.distance_edit.text()):
+            return(self.distance_edit.text())
+        else: return(False)
+
+    def getPrice(self) -> str:
+        if self.tryInt(self.price_edit.text()):
+            return(self.price_edit.text())
+        else: return(False)
+
+    def getReturnState(self) -> str:
+        if self.return_btn.isChecked(): return_state = 'true'
+        else: return_state = 'false'
+        return(return_state)
+    
 
 class TravelWidget(QGroupBox):
     """Custom wigdget used to show Travel object"""
@@ -181,26 +189,52 @@ class TravelWidget(QGroupBox):
 
     def UIComponents(self) -> None:
         """Set graphical components"""
-        layout = QGridLayout(self)
-        layout.setRowStretch(0,1)
-        self.setLayout(layout)
+        main_lay = QVBoxLayout()
+        self.setLayout(main_lay)
 
-        self.start_label = QLabel(self.travel.start)
-        self.end_label = QLabel(self.travel.end)
-        self.distance_label = QLabel(self.travel.distance)
-        self.price_label = QLabel(self.travel.price)
+        top_lay = QHBoxLayout()
+        bottom_lay = QHBoxLayout()
+
+        start_lay = QVBoxLayout()
+        end_lay = QVBoxLayout()
+
+        self.start_name_label = QLabel(self.travel.start_adress.name)
+        self.start_name_label.setAlignment(Qt.AlignHCenter)
+        self.start_street_label = QLabel(self.travel.start_adress.street)
+        self.start_street_label.setAlignment(Qt.AlignHCenter)
+
+        self.arrow_label = QLabel('-->')
+        self.arrow_label.setAlignment(Qt.AlignCenter)
+
+        self.end_name_label = QLabel(self.travel.end_adress.name)
+        self.end_name_label.setAlignment(Qt.AlignHCenter)
+        self.end_street_label = QLabel(self.travel.end_adress.street)
+        self.end_street_label.setAlignment(Qt.AlignHCenter)
+
+        self.distance_label = QLabel(self.travel.distance+' km')
+        self.price_label = QLabel(self.travel.price+' euro/km')
         self.rtrn_label = QLabel(self.return_txt)
 
-        edit_btn = QPushButton('...')
-        edit_btn.setFixedWidth(30)
-        edit_btn.clicked.connect(self.onEditClicked)
+        self.edit_btn = QPushButton('...')
+        self.edit_btn.setFixedWidth(30)
+        self.edit_btn.clicked.connect(self.onEditClicked)
 
-        layout.addWidget(self.start_label,0,0)
-        layout.addWidget(self.end_label,0,1)
-        layout.addWidget(self.distance_label,1,0)
-        layout.addWidget(self.rtrn_label,1,1)
-        layout.addWidget(self.price_label,0,2)
-        layout.addWidget(edit_btn,1,2)
+        start_lay.addWidget(self.start_name_label)
+        start_lay.addWidget(self.start_street_label)
+        end_lay.addWidget(self.end_name_label)
+        end_lay.addWidget(self.end_street_label)
+
+        top_lay.addLayout(start_lay)
+        top_lay.addWidget(self.arrow_label)
+        top_lay.addLayout(end_lay)
+
+        bottom_lay.addWidget(self.distance_label)
+        bottom_lay.addWidget(self.price_label)
+        bottom_lay.addWidget(self.rtrn_label)
+        bottom_lay.addWidget(self.edit_btn)
+
+        main_lay.addLayout(top_lay)
+        main_lay.addLayout(bottom_lay)
 
     def onEditClicked(self) -> None:
         pass
@@ -226,19 +260,17 @@ class TravelListWidget(QWidget):
         self.setLayout(self.main_layout)
         self.updateLayout()
 
-    def getWidgetList(self) -> list[TravelWidget]:
+    def getTravelWidgetList(self) -> list[TravelWidget]:
         """Get all row list from csv file"""
         widget_list = []
-        for e in self.data.getDataList(self.root)[1:]:
-            travel = Travel(e)
+        for travel in self.data.getTravelList(self.root):
             travel_widget = TravelWidget(travel)
-            travel_widget.edit_signal.connect(lambda:self.editSignal(travel))
             widget_list.append(travel_widget)
         return(widget_list)
     
     def updateLayout(self) -> None:
         """Delete all widget and add new widget from file reading"""
-        self.widget_list = self.getWidgetList()
+        self.widget_list = self.getTravelWidgetList()
         if self.main_layout.count() != 0:
             for i in range(self.main_layout.count()):
                 item = self.main_layout.itemAt(i)
@@ -246,11 +278,11 @@ class TravelListWidget(QWidget):
                 if widget is not None:
                     widget.deleteLater()
                 else: self.main_layout.removeItem(item)
-                    
-        for widget in self.widget_list:
-            self.main_layout.addWidget(widget)
-        spacer = QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.main_layout.addItem(spacer)
+        if len(self.widget_list) != 0:            
+            for widget in self.widget_list:
+                self.main_layout.addWidget(widget)
+            spacer = QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding)
+            self.main_layout.addItem(spacer)
 
     def updateDisplay(self,text_to_find:str) -> None:      
         """Show and hide widgets"""
