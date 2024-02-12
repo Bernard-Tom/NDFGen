@@ -1,5 +1,6 @@
 import csv 
 from datetime import datetime
+import pandas as pd
 
 class Adress():
     def __init__(self,name,street,postal,city) -> None:
@@ -113,3 +114,79 @@ class Roots():
         self.historic = './data/historic.csv'
         self.adress = './data/adress.csv'
 
+from openpyxl import Workbook
+
+class Excell():
+    def __init__(self) -> None: 
+        self.title = 'Frais de déplacement'
+        self.user_name = 'Ana Leïla MEJRI'
+        self.date = '01/01/2024 - 01/02/2024'
+        self.user_adress = '31 rue du Cardinal 1000 Bruxelles'
+        self.user_bank = 'FR97 3000 2059 3600 0019 3213 S77'
+
+        self.wb = Workbook()
+        self.sh = self.wb.active
+        self.start_row_index = 6
+        #self.sh.title = 'onglet'
+        self.readCSV()
+        self.setColumnDim()
+        self.setHeader()
+        self.setTab()
+        #self.setColumnDim()
+        #sh.merge_cells('A1:D1')
+    
+    def setColumnDim(self):
+        for dim,column in zip ([15,20,30,10,30,10,10,10],['A','B','C','D','E','F','G','H']):
+            self.sh.column_dimensions[column].width = dim
+
+    def readCSV(self):
+        df = pd.read_csv('test.csv',sep=';')
+        #print(len(df))
+        self.data={'Date':[],
+              'Ecole + Trajet':[],
+              'Adresse':[],
+              'CP':[],
+              'Localité':[],
+              'Km/AR':[],
+              '€/km':[],
+              'Total':[]}
+        for column,row in zip (['date','end_name','end_street','end_postal','end_city','distance','price',None],self.data.keys()):
+            if column == 'distance':
+                distance_list = []
+                for i in range(len(df['rtrn_state'].values)):
+                    if df['rtrn_state'].values[i]:
+                        distance_list.append(int(df['distance'].values[i]) *2)
+                    else : distance_list.append(df['distance'].values[i])
+                self.data['Km/AR']=distance_list
+            if column == None:
+                total_list = []
+                for i in range(len(df['date'].values)):
+                    row_index = self.start_row_index+1+i
+                    total_list.append(f'=F{row_index}*G{row_index}')
+                self.data['Total'] = total_list 
+            else: self.data[row] = list(df[column].values)
+
+    def setHeader(self) -> None:
+        #for key in list(self.data.keys()): 
+        #    print(key)
+        for i in range(len(self.data)):
+            #print(i,key)
+            self.sh.cell(row=self.start_row_index,column=i+1,value=list(self.data)[i])
+
+    def setTab(self) -> None:
+        for column,key in zip (range(1,len(self.data)+1),list(self.data.keys())):
+            #print(column,key)
+            for row,e in zip (range(self.start_row_index+1,self.start_row_index+1+len(self.data[key])),self.data[key]):
+                #print(row)
+                #print(e)
+                self.sh.cell(row=row,column=column,value=e)
+
+        self.start_tab_row = self.start_row_index+1
+        self.end_tab_row = self.start_tab_row+len(self.data['Date'])-1
+        self.end_tab_column = len(self.data)
+
+        print(self.end_tab_column)
+
+        self.sh.cell(row=self.end_tab_row+1,column=self.end_tab_column,value=f'=sum(H{self.start_tab_row}:H{self.end_tab_row})')
+
+        self.wb.save("NDF.xlsx")
