@@ -115,78 +115,108 @@ class Roots():
         self.adress = './data/adress.csv'
 
 from openpyxl import Workbook
+from openpyxl.styles import colors,Font,Border,Side
 
 class Excell():
     def __init__(self) -> None: 
-        self.title = 'Frais de déplacement'
-        self.user_name = 'Ana Leïla MEJRI'
-        self.date = '01/01/2024 - 01/02/2024'
+        self.title = f'Frais de déplacement du test au test'
+        self.code = 'Code DA - 601030'
+        self.user_name = 'Ana-Leïla MEJRI'
         self.user_adress = '31 rue du Cardinal 1000 Bruxelles'
         self.user_bank = 'FR97 3000 2059 3600 0019 3213 S77'
 
+        self.start_tab_row = 6
+        self.df = pd.read_csv('test.csv',sep=';')
+        self.tab_dict = self.getTabDict(self.df)
+        self.end_tab_row = self.start_tab_row+len(list(self.tab_dict.values())[0])
+        print(self.end_tab_row)
+
+        self.nb_tab_column = len(self.tab_dict)
+        self.nb_tab_row = len(self.tab_dict['Date'])
+
         self.wb = Workbook()
         self.sh = self.wb.active
-        self.start_row_index = 6
+        
         #self.sh.title = 'onglet'
-        self.readCSV()
-        self.setColumnDim()
-        self.setHeader()
-        self.setTab()
-        #self.setColumnDim()
-        #sh.merge_cells('A1:D1')
-    
-    def setColumnDim(self):
-        for dim,column in zip ([15,20,30,10,30,10,10,10],['A','B','C','D','E','F','G','H']):
-            self.sh.column_dimensions[column].width = dim
+        self.my_border = Side(border_style="thin", color="000000")
+        self.setSheet()
+        self.setTab(self.tab_dict)
+        self.setBottomTab()
 
-    def readCSV(self):
-        df = pd.read_csv('test.csv',sep=';')
-        #print(len(df))
-        self.data={'Date':[],
+        self.wb.save("NDF.xlsx")
+        
+    def getTabDict(self,df) -> dict:
+        tab_dict={'Date':[],
               'Ecole + Trajet':[],
               'Adresse':[],
               'CP':[],
               'Localité':[],
               'Km/AR':[],
-              '€/km':[],
-              'Total':[]}
-        for column,row in zip (['date','end_name','end_street','end_postal','end_city','distance','price',None],self.data.keys()):
-            if column == 'distance':
-                distance_list = []
-                for i in range(len(df['rtrn_state'].values)):
-                    if df['rtrn_state'].values[i]:
-                        distance_list.append(int(df['distance'].values[i]) *2)
-                    else : distance_list.append(df['distance'].values[i])
-                self.data['Km/AR']=distance_list
-            if column == None:
-                total_list = []
-                for i in range(len(df['date'].values)):
-                    row_index = self.start_row_index+1+i
-                    total_list.append(f'=F{row_index}*G{row_index}')
-                self.data['Total'] = total_list 
-            else: self.data[row] = list(df[column].values)
+              '€/km':[]}
+        
+        for csv_key,dict_key in zip (['date','end_name','end_street','end_postal','end_city','distance','price'],tab_dict.keys()):
+            tab_dict[dict_key] = list(df[csv_key].values)
 
-    def setHeader(self) -> None:
+        tab_dict['Total'] = []
+        for i in range(len(list(tab_dict.values())[0])):
+            row_index = self.start_tab_row+1+i
+            tab_dict['Total'].append(f'=F{row_index}*G{row_index}')
+        return(tab_dict)
+
+    def setSheet(self):
+        self.setColumnDim()
+        head = {'A1':'Frais de déplacement',
+                'G1':self.code,
+                'B3':self.user_name,
+                'C3':self.user_adress,
+                'B4':'Compte bancaire',
+                'C4':self.user_bank}
+        
+        for key in head.keys():
+            self.sh[key] = head[key]
+            self.sh[key].border = Border(top=self.my_border, left=self.my_border, right=self.my_border, bottom=self.my_border)
+            self.sh[key].font = Font(bold=True)
+
+        self.sh.merge_cells('A1:F1')
+        self.sh.merge_cells('G1:H1')
+        self.sh.merge_cells('C3:H3')
+        self.sh.merge_cells('C4:H4')
+
+    
+    def setColumnDim(self):
+        for dim,column in zip ([20,20,30,10,30,10,10,10],['A','B','C','D','E','F','G','H']):
+            self.sh.column_dimensions[column].width = dim
+
+    def setTab(self,tab_dict:dict) -> None:
+        for key,column in zip (self.tab_dict.keys(),range(1,len(tab_dict)+1)):
+            cell = self.sh.cell(row = self.start_tab_row,column = column, value = key)
+            cell.border = Border(top=self.my_border, left=self.my_border, right=self.my_border, bottom=self.my_border)
+            cell.font = Font(bold=True)
+            for row in range(len(list(tab_dict.values())[0])):
+                cell = self.sh.cell(row = self.start_tab_row+1+row, column = column, value = tab_dict[key][row])
+                cell.border = Border(top=self.my_border, left=self.my_border, right=self.my_border, bottom=self.my_border)
+
+    def setBottomTab(self):
+        tab = {'Déplacement divers':self.end_tab_row+1,
+               'Total parkin':self.end_tab_row+2,
+               'Total Déplacement':self.end_tab_row+3}
+        
+        for key in tab.keys():
+            self.sh[f'A{tab[key]}'] = key
+            self.sh[f'A{tab[key]}'].border = Border(top=self.my_border, left=self.my_border, right=self.my_border, bottom=self.my_border)
+            self.sh[f'A{tab[key]}'].font = Font(bold=True)
+            self.sh.merge_cells(f'A{tab[key]}:G{tab[key]}')
+        
+        total = f'=sum(H{self.start_tab_row+1}:H{self.end_tab_row})'
+        self.sh.cell(row=tab['Total Déplacement'], column = len(self.tab_dict),value = total)
+
         #for key in list(self.data.keys()): 
         #    print(key)
-        for i in range(len(self.data)):
+        #print(self.df.head())
+        #for i in range(len(self.data)):
             #print(i,key)
-            self.sh.cell(row=self.start_row_index,column=i+1,value=list(self.data)[i])
+            #self.sh.cell(row=self.start_tab_row,column=i+1,value=list(self.data)[i])
 
-    def setTab(self) -> None:
-        for column,key in zip (range(1,len(self.data)+1),list(self.data.keys())):
-            #print(column,key)
-            for row,e in zip (range(self.start_row_index+1,self.start_row_index+1+len(self.data[key])),self.data[key]):
-                #print(row)
-                #print(e)
-                self.sh.cell(row=row,column=column,value=e)
+        #self.sh.cell(row=self.end_tab_row+1,column=self.end_tab_column,value=f'=sum(H{self.start_tab_row}:H{self.end_tab_row})')
 
-        self.start_tab_row = self.start_row_index+1
-        self.end_tab_row = self.start_tab_row+len(self.data['Date'])-1
-        self.end_tab_column = len(self.data)
-
-        print(self.end_tab_column)
-
-        self.sh.cell(row=self.end_tab_row+1,column=self.end_tab_column,value=f'=sum(H{self.start_tab_row}:H{self.end_tab_row})')
-
-        self.wb.save("NDF.xlsx")
+        
