@@ -390,6 +390,7 @@ class HistoricWin(QWidget):
         add_btn = QPushButton('Ajouter')
         add_btn.clicked.connect(self.addTravel)
         gen_btn = QPushButton('Générer')
+        gen_btn.clicked.connect(self.generate)
         self.btn_layout.addWidget(add_btn)
         self.btn_layout.addWidget(gen_btn)
     
@@ -409,3 +410,6 @@ class HistoricWin(QWidget):
     def onEditorClose(self) -> None:
         self.travel_editor_win.close()
         self.travel_list_widget.updateLayout()
+
+    def generate(self) -> None:
+        pass
