@@ -50,15 +50,24 @@ class AdressEditorWidget(QGroupBox):
         self.btn_layout.addWidget(self.local_btn)
 
         # Line Edit
-        adress_name_list = []
-        for adress in self.adress_list:
-            adress_name_list.append(adress.name)
-        self.completer = QCompleter(adress_name_list)
-        self.completer.activated.connect(self.onSearch)
-        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.name_edit = QLineEdit()
-        self.name_edit.setCompleter(self.completer)
+        completer_list = self.getCompleterLists(self.adress_list)
+        adress_name_list = completer_list[0]
+        adress_street_list = completer_list[1]
+
+        self.name_completer = QCompleter(adress_name_list)
+        self.name_completer.setFilterMode(Qt.MatchContains)
+        self.name_completer.activated.connect(self.onSearch)
+        self.name_completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.name_edit.setCompleter(self.name_completer)
+
         self.street_edit = QLineEdit()
+        self.street_completer = QCompleter(adress_street_list)
+        self.street_completer.setFilterMode(Qt.MatchContains)
+        self.street_completer.activated.connect(self.onSearch)
+        self.street_completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.street_edit.setCompleter(self.street_completer)
+
         self.postal_edit = QLineEdit()
         self.city_edit = QLineEdit()
 
@@ -70,6 +79,14 @@ class AdressEditorWidget(QGroupBox):
 
         self.main_layout.addLayout(self.btn_layout)
         self.main_layout.addLayout(self.form_layout)
+
+    def getCompleterLists(self,adress_list:list[Adress]) -> list[list]:
+        name_list = []
+        street_list = []
+        for adress in adress_list:
+            name_list.append(adress.name)
+            street_list.append(adress.street)
+        return(name_list,street_list)
 
     def onBtnClicked(self)-> None:
         btn = self.btn_grp.checkedButton()
@@ -86,7 +103,8 @@ class AdressEditorWidget(QGroupBox):
     def onSearch(self,text) -> None:
         """When user find an adress name in Completer -> set full adress prmtr"""
         for adress in self.adress_list:
-            if adress.name == text:
+            if text == adress.name or text == adress.street:
+                self.name_edit.setText(adress.name)
                 self.street_edit.setText(adress.street)
                 self.postal_edit.setText(adress.postal)
                 self.city_edit.setText(adress.city)
@@ -281,10 +299,11 @@ class TravelWidget(QGroupBox):
 class TravelListWidget(QWidget):
     """Custom Widget used to show the list of Travel widget list"""
     edit_signal = pyqtSignal(Travel)
-    def __init__(self,root) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.root = root
+        self.root = Roots()
         self.data = Data()
+        self.widget_list = []
         self.UIComponents()
 
     def UIComponents(self) -> None:
@@ -293,17 +312,17 @@ class TravelListWidget(QWidget):
         self.setLayout(self.main_layout)
         self.updateLayout()
 
-    def getTravelWidgetList(self) -> list[TravelWidget]:
+    def getlWidgetList(self) -> list[TravelWidget]:
         """Get all row list from csv file"""
         widget_list = []
-        for travel in self.data.getTravelList(self.root):
+        for travel in self.data.getTravelList(self.root.historic):
             travel_widget = TravelWidget(travel)
             widget_list.append(travel_widget)
         return(widget_list)
     
     def updateLayout(self) -> None:
         """Delete all widget and add new widget from file reading"""
-        self.widget_list = self.getTravelWidgetList()
+        self.widget_list = self.getlWidgetList()
         if self.main_layout.count() != 0:
             for i in range(self.main_layout.count()):
                 item = self.main_layout.itemAt(i)
@@ -444,6 +463,7 @@ class GenWin(QWidget):
             #os.system(f"start EXCEL.EXE {self.root.ndf_excel}")
         
 class HistoricWin(QWidget):
+    """Class used to show all travel for historic"""
     def __init__(self) -> None:
         super().__init__()
         self.root = Roots()
@@ -458,7 +478,7 @@ class HistoricWin(QWidget):
         self.search_bar = QLineEdit()
         self.search_bar.textChanged.connect(self.onSearchSignal)
 
-        self.travel_list_widget = TravelListWidget(self.root.historic)
+        self.travel_list_widget = TravelListWidget()
 
         self.my_scroll = QScrollArea()
         self.my_scroll.setWidgetResizable(True)

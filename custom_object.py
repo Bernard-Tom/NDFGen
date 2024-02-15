@@ -6,7 +6,8 @@ from openpyxl import Workbook
 from openpyxl.styles import colors,Font,Border,Side
 
 class Adress():
-    def __init__(self,name,street,postal,city) -> None:
+    """Class used to represent an Adress"""
+    def __init__(self,name:str,street:str,postal:str,city:str) -> None:
         self.name=name
         self.street = street
         self.postal=postal
@@ -243,6 +244,3 @@ class Excel():
         
         total = f'=sum(H{self.start_tab_row+1}:H{self.end_tab_row})'
         self.sh.cell(row=tab['Total Déplacement'], column = len(self.tab_dict),value = total)
-
-
-        

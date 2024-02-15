@@ -28,7 +28,6 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    #e = Excel('27/02/1000','15/09/1908')
     w = MainWindow()
     w.show()
     app.exec()

@@ -1,0 +1,9 @@
+recherche ecole par nom pas par debut uniquement
+fonctionnalité sur l'adress egalement
+
+kilometrage pré-remplit : ne pas doubler la distance dans la GUI
+pré remplissage de la date
+
+mettre en gras les nom d'adress et la date
+
+Ajouter une page adresse 
