@@ -386,6 +386,8 @@ class TravelEditorWin(QWidget):
         if not(start_adress and end_adress and distance and price):
             return(False)
         else: 
+            if return_state == 'true':
+                distance = str(float(distance)*2)
             travel = Travel(date,start_adress,end_adress,distance,price,return_state)
             return(travel)
 
