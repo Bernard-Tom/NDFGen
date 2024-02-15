@@ -87,6 +87,12 @@ class Data():
             for row in data:
                 writer.writerow(row)
 
+    def saveAdress(self,root:str,adress:Adress) -> None:
+        data = self.getDataList(root)
+        new_row = [adress.name,adress.street,adress.postal,adress.city]
+        data.append(new_row)
+        self.writeData(root,data)
+
     def getSortedlList(self,list:list) -> list:
         """Return a list sorted throw the date"""
         date_dict = {}
@@ -102,6 +108,7 @@ class Data():
         start_adress = travel.start_adress
         end_adress = travel.end_adress
         new_row = [travel.date,start_adress.name,start_adress.street,start_adress.postal,start_adress.city,end_adress.name,end_adress.street,end_adress.postal,end_adress.city,travel.distance,travel.price,travel.rtrn_state]
+        # If edit mode
         if old_travel != None:
             old_travel_list = old_travel.getList()
             if old_travel_list in data:

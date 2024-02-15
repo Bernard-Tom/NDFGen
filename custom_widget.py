@@ -68,9 +68,6 @@ class AdressEditorWidget(QGroupBox):
         self.form_layout.addRow('Code Postale',self.postal_edit)
         self.form_layout.addRow('Localité',self.city_edit)
 
-        #self.completer = QCompleter(self.adress_list)
-        #self.completer.setCaseSensitivity(Qt.CaseInsensitive)
-
         self.main_layout.addLayout(self.btn_layout)
         self.main_layout.addLayout(self.form_layout)
 
@@ -87,6 +84,7 @@ class AdressEditorWidget(QGroupBox):
             self.enableFormLay(True)
 
     def onSearch(self,text) -> None:
+        """When user find an adress name in Completer -> set full adress prmtr"""
         for adress in self.adress_list:
             if adress.name == text:
                 self.street_edit.setText(adress.street)
@@ -115,7 +113,6 @@ class AdressEditorWidget(QGroupBox):
                 return(adress)
             except: return(False)
         else: return(False)
-
 
 class PrmtrEditorWidget(QGroupBox):
     """Custom wigdget used to edit prmtrs in Travel Editor Window"""
@@ -329,6 +326,7 @@ class TravelEditorWin(QWidget):
         super().__init__()
         self.data = Data()
         self.root = Roots()
+        self.adress_list = self.data.getAdressList(self.root.adress)
         self.UIComponents()
         self.old_travel = None
 
@@ -353,6 +351,12 @@ class TravelEditorWin(QWidget):
         main_layout.addWidget(self.err_label)
         main_layout.addWidget(save_btn)
 
+    def getAdressNameList(self,adress_list) -> str:
+        adress_name_list = []
+        for adress in adress_list:
+            adress_name_list.append(adress.name)
+        return(adress_name_list)
+
     def setUserTravel(self,travel:Travel):
         self.old_travel=travel
         self.start_editor.setAdress(travel.start_adress)
@@ -376,9 +380,17 @@ class TravelEditorWin(QWidget):
             return(travel)
 
     def save(self):
-        if self.getUserTravel() != False:
-            travel = self.getUserTravel()
+        travel = self.getUserTravel()
+        if travel != False:
             self.data.saveTravel(self.root.historic,self.old_travel,travel)
+            # If adress in travel are new -> save adress in adress.csv
+            adress_name_list = self.getAdressNameList(self.adress_list)
+            print(adress_name_list)
+            for adress in [travel.start_adress,travel.end_adress]:
+                print(adress.name)
+                if not(adress.name in adress_name_list):
+                    print('new adress')
+                    self.data.saveAdress(self.root.adress,adress)
             self.close_signal.emit()
         else: self.err_label.setText('format error')
 
