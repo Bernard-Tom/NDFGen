@@ -1,10 +1,11 @@
 from PyQt5.QtWidgets import (
     QWidget, QLineEdit, QLabel, QPushButton, QVBoxLayout, 
-    QGroupBox,QListWidget,QButtonGroup,QRadioButton,QFormLayout,
-    QCheckBox,QGridLayout,QListWidgetItem,QSpacerItem,QSizePolicy,
+    QGroupBox,QButtonGroup,QRadioButton,QFormLayout,
+    QCheckBox,QSpacerItem,QSizePolicy,
     QCompleter,QHBoxLayout,QScrollArea,
     )
 from PyQt5.QtCore import pyqtSignal,Qt
+from PyQt5.QtGui import QFont
 
 from custom_object import *
 
@@ -243,6 +244,9 @@ class TravelWidget(QGroupBox):
         main_lay = QVBoxLayout()
         self.setLayout(main_lay)
 
+        font = QFont()
+        font.setBold(True)
+
         top_lay = QHBoxLayout()
         bottom_lay = QHBoxLayout()
 
@@ -250,6 +254,7 @@ class TravelWidget(QGroupBox):
         end_lay = QVBoxLayout()
 
         self.start_name_label = QLabel(self.travel.start_adress.name)
+        self.start_name_label.setFont(font)
         self.start_name_label.setAlignment(Qt.AlignHCenter)
         self.start_street_label = QLabel(self.travel.start_adress.getStreetString())
         self.start_street_label.setAlignment(Qt.AlignHCenter)
@@ -258,6 +263,7 @@ class TravelWidget(QGroupBox):
         self.arrow_label.setAlignment(Qt.AlignCenter)
 
         self.end_name_label = QLabel(self.travel.end_adress.name)
+        self.end_name_label.setFont(font)
         self.end_name_label.setAlignment(Qt.AlignHCenter)
         self.end_street_label = QLabel(self.travel.end_adress.getStreetString())
         self.end_street_label.setAlignment(Qt.AlignHCenter)
@@ -405,8 +411,6 @@ class TravelEditorWin(QWidget):
         if not(start_adress and end_adress and distance and price):
             return(False)
         else: 
-            if return_state == 'true':
-                distance = str(float(distance)*2)
             travel = Travel(date,start_adress,end_adress,distance,price,return_state)
             return(travel)
 

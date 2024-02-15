@@ -1,9 +1,8 @@
 import csv 
 from datetime import datetime
 import pandas as pd
-import string
 from openpyxl import Workbook
-from openpyxl.styles import colors,Font,Border,Side
+from openpyxl.styles import Font,Border,Side
 
 class Adress():
     """Class used to represent an Adress"""
@@ -20,10 +19,7 @@ class Adress():
         return(self.street+' '+self.postal+' '+self.city)
 
 class Travel(): # A modifier
-    """
-    A class used to represent a Travel
-    Attributes : rtrn_state = 'true' or 'false
-    """
+    """A class used to represent a Travel"""
     def __init__(self,date:str,start_adress:Adress,end_adress:Adress,distance:str,price:str,rtrn_state:str) -> None:
         self.date = date
         self.start_adress = start_adress
@@ -128,6 +124,7 @@ class Roots():
         self.ndf_excel = './data/NDF.xlsx'
 
 class Excel():
+    """Class used to generate excel file"""
     def __init__(self,start_date,end_date) -> None: 
         self.start_date = start_date
         self.end_date = end_date
@@ -178,7 +175,11 @@ class Excel():
             date = datetime.strptime(df['date'][row_index],'%d/%m/%Y')
             if date >= start_date and date <= end_date:
                 for csv_key,dict_key in zip (df_columns,tab_dict.keys()):
-                    tab_dict[dict_key].append(df[csv_key][row_index])
+                    if dict_key == 'Km/AR':
+                        if df['rtrn_state'][row_index]:
+                            distance = float(df['distance'][row_index])*2
+                            tab_dict[dict_key].append(str(distance))
+                    else: tab_dict[dict_key].append(df[csv_key][row_index])
             else: pass
 
         #print(len(tab_dict.values()[0]))
@@ -217,7 +218,7 @@ class Excel():
         self.sh.merge_cells('C4:H4')
     
     def setColumnDim(self) -> None:
-        for dim,column in zip ([20,20,30,10,30,10,10,10],['A','B','C','D','E','F','G','H']):
+        for dim,column in zip ([15,40,30,10,30,10,10,10],['A','B','C','D','E','F','G','H']):
             self.sh.column_dimensions[column].width = dim
 
     def setTab(self,tab_dict:dict,border:Border,font:Font) -> None:
