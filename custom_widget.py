@@ -31,11 +31,12 @@ class AdressEditorWidget(QGroupBox):
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
+        # Btn 
         self.btn_layout = QHBoxLayout()
         self.btn_grp = QButtonGroup()
         self.btn_grp.setExclusive(True)
         self.house_btn = QRadioButton('house')
-        self.local_btn = QRadioButton('local')
+        self.local_btn = QRadioButton('Cap Sciences')
         self.new_btn = QRadioButton('new')
         self.new_btn.setChecked(True)
 
@@ -48,7 +49,15 @@ class AdressEditorWidget(QGroupBox):
         self.btn_layout.addWidget(self.house_btn)
         self.btn_layout.addWidget(self.local_btn)
 
+        # Line Edit
+        adress_name_list = []
+        for adress in self.adress_list:
+            adress_name_list.append(adress.name)
+        self.completer = QCompleter(adress_name_list)
+        self.completer.activated.connect(self.onSearch)
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.name_edit = QLineEdit()
+        self.name_edit.setCompleter(self.completer)
         self.street_edit = QLineEdit()
         self.postal_edit = QLineEdit()
         self.city_edit = QLineEdit()
@@ -77,6 +86,13 @@ class AdressEditorWidget(QGroupBox):
             self.setAdress(adress)
             self.enableFormLay(True)
 
+    def onSearch(self,text) -> None:
+        for adress in self.adress_list:
+            if adress.name == text:
+                self.street_edit.setText(adress.street)
+                self.postal_edit.setText(adress.postal)
+                self.city_edit.setText(adress.city)
+
     def enableFormLay(self,state:bool) -> None:
         for i in range(self.form_layout.count()):
             self.form_layout.itemAt(i).widget().setEnabled(state)
@@ -99,6 +115,7 @@ class AdressEditorWidget(QGroupBox):
                 return(adress)
             except: return(False)
         else: return(False)
+
 
 class PrmtrEditorWidget(QGroupBox):
     """Custom wigdget used to edit prmtrs in Travel Editor Window"""
