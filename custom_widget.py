@@ -134,12 +134,24 @@ class PrmtrEditorWidget(QGroupBox):
         
         self.date_edit = QLineEdit()
         self.distance_edit = QLineEdit()
+
+        self.btn_lay = QHBoxLayout()
+        self.btn_grp = QButtonGroup()
+        self.btn_grp.setExclusive(True)
+        self.btn_p1 = QRadioButton('0.42')
+        self.btn_p1.setChecked(True)
+        self.btn_p2 = QRadioButton('1.68')
+        self.btn_grp.addButton(self.btn_p1)
+        self.btn_grp.addButton(self.btn_p2)
+        self.btn_lay.addWidget(self.btn_p1)
+        self.btn_lay.addWidget(self.btn_p2)
+
         self.price_edit = QLineEdit()
         self.return_btn = QCheckBox('Aller / Retour')
 
         self.main_layout.addRow('Date : DD/MM/YYYY',self.date_edit)
         self.main_layout.addRow('Distance : km',self.distance_edit)
-        self.main_layout.addRow('Prix Kilométrique : euro/km',self.price_edit)
+        self.main_layout.addRow('Prix Kilométrique : euro/km',self.btn_lay)
         self.main_layout.addRow(self.return_btn)
 
 ####  Set Data
@@ -149,19 +161,15 @@ class PrmtrEditorWidget(QGroupBox):
     def setDistance(self,distance:str) -> None:
         self.distance_edit.setText(distance)
 
-    def setPrice(self,price) -> None:
-        self.price_edit.setText(price)
+    def setPrice(self,price:str) -> None:
+        for btn in self.btn_grp.buttons():
+            if price == btn.text():
+                btn.setChecked(True)
 
     def setReturnState(self,rtrn_state:str) -> None:
         if rtrn_state == 'true':
             self.return_btn.setChecked(True)
         else: self.return_btn.setChecked(False)
-
-    def tryInt(self,string) -> bool:
-        try:
-            int(string)
-            return(True)
-        except: return(False)
 
 ####  Get Data
     def getDate(self) -> str | bool:
@@ -178,14 +186,16 @@ class PrmtrEditorWidget(QGroupBox):
         except: return(False)
     
     def getDistance(self) -> str:
-        if self.tryInt(self.distance_edit.text()):
+        try: 
+            float(self.distance_edit.text())
             return(self.distance_edit.text())
-        else: return(False)
+        except: return(False)
 
     def getPrice(self) -> str:
-        if self.tryInt(self.price_edit.text()):
-            return(self.price_edit.text())
-        else: return(False)
+        try:
+            float(self.btn_grp.checkedButton().text())
+            return(self.btn_grp.checkedButton().text())
+        except: return(False)
 
     def getReturnState(self) -> str:
         if self.return_btn.isChecked(): return_state = 'true'
@@ -385,11 +395,8 @@ class TravelEditorWin(QWidget):
             self.data.saveTravel(self.root.historic,self.old_travel,travel)
             # If adress in travel are new -> save adress in adress.csv
             adress_name_list = self.getAdressNameList(self.adress_list)
-            print(adress_name_list)
             for adress in [travel.start_adress,travel.end_adress]:
-                print(adress.name)
                 if not(adress.name in adress_name_list):
-                    print('new adress')
                     self.data.saveAdress(self.root.adress,adress)
             self.close_signal.emit()
         else: self.err_label.setText('format error')
