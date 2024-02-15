@@ -132,15 +132,9 @@ class Excel():
         
         self.end_tab_row = self.start_tab_row+len(list(self.tab_dict.values())[0])
 
-        #tab_dict_header_list = list(self.tab_dict.keys())
-
-        #self.nb_tab_column = len(self.tab_dict)
-        #self.nb_tab_row = len(self.tab_dict['Date'])
-
         self.wb = Workbook()
         self.sh = self.wb.active
         
-        #self.sh.title = 'onglet'
         side = Side(border_style="thin", color="000000")
         self.border = Border(top=side, left=side, right=side, bottom=side)
         self.bold_font = Font(bold=True)

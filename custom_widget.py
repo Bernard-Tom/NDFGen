@@ -8,6 +8,8 @@ from PyQt5.QtCore import pyqtSignal,Qt
 
 from custom_object import *
 
+import os
+
 class AdressEditorWidget(QGroupBox):
     """Custom wigdget used to edit Adress in Travel Editor Window"""
     def __init__(self,title) -> None:
@@ -187,7 +189,7 @@ class TravelWidget(QGroupBox):
         self.UIComponents()
         self.setStyleSheet("QGroupBox {border: 2px solid #000000;}")
         self.setFixedHeight(100)
-        self.setFixedWidth(700)
+        self.setFixedWidth(720)
         self.setContentsMargins(10,10,10,10)
 
     def setRtrnState(self) -> None:
@@ -363,13 +365,52 @@ class TravelEditorWin(QWidget):
             self.close_signal.emit()
         else: self.err_label.setText('format error')
 
+class GenWin(QWidget):
+    def __init__(self) -> None:
+        super().__init__()
+        self.root = Roots()
+        self.UIComponents()
+
+    def UIComponents(self) -> None:
+        main_lay = QVBoxLayout()
+        self.setLayout(main_lay)
+
+        form_lay = QFormLayout()
+        self.start_date_label = QLineEdit()
+        self.end_date_label = QLineEdit()
+        form_lay.addRow('Date de début', self.start_date_label)
+        form_lay.addRow('Date de fin', self.end_date_label)
+        gen_btn = QPushButton('Générer')
+        gen_btn.clicked.connect(self.generate)
+        main_lay.addLayout(form_lay)
+        main_lay.addWidget(gen_btn)
+
+    def tryDate(self,date) -> bool:
+        if len(date) != 10: 
+            return(False)
+        if [2,5] != [n for (n,e) in enumerate(date) if e =='/']:
+            return(False)
+        try:
+            int(date[:2])
+            int(date[3:5])
+            int(date[6:10])
+            return(date)
+        except: return(False)
+
+    def generate(self) -> None:
+        start_date = self.start_date_label.text()
+        end_date = self.end_date_label.text()
+        if self.tryDate(start_date) and self.tryDate(end_date): 
+            excel_win = Excel(start_date,end_date)
+            self.close()
+            #os.system(f"start EXCEL.EXE {self.root.ndf_excel}")
+        
 class HistoricWin(QWidget):
     def __init__(self) -> None:
         super().__init__()
         self.root = Roots()
         self.data = Data()
         self.UIComponents()
-        #self.update()
 
     def UIComponents(self) -> None:
         """Set graphical components"""
@@ -412,4 +453,6 @@ class HistoricWin(QWidget):
         self.travel_list_widget.updateLayout()
 
     def generate(self) -> None:
-        pass
+        self.gen_win = GenWin()
+        self.gen_win.show()
+

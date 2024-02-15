@@ -11,6 +11,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle('NDFGen')
         self.setFixedWidth(800)
+        self.setFixedHeight(800)
         self.UIComponents()
 
     def UIComponents(self)-> None:
@@ -27,10 +28,10 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    e = Excel('27/02/1000','15/09/1908')
-    #w = MainWindow()
-    #w.show()
-    #app.exec()
+    #e = Excel('27/02/1000','15/09/1908')
+    w = MainWindow()
+    w.show()
+    app.exec()
 
 if __name__ == '__main__':
     main()
