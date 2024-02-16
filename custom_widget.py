@@ -149,6 +149,8 @@ class PrmtrEditorWidget(QGroupBox):
     def __init__(self) -> None:
         super().__init__()
         self.setWidgetStyle()
+        self.data = Data()
+        self.root = Roots()
         self.UIComponents()
 
     def setWidgetStyle(self) -> None:
@@ -205,6 +207,12 @@ class PrmtrEditorWidget(QGroupBox):
         if rtrn_state == 'true':
             self.return_btn.setChecked(True)
         else: self.return_btn.setChecked(False)
+
+    def setPreviousDate(self) -> None:
+        data = self.data.getTravelList(self.root.historic)
+        if len(data) != 0:
+            last_travel = data[len(data)-1]
+            self.setDate(last_travel.date)
 
 ####  Get Data
     def getDate(self) -> str | bool:
@@ -377,28 +385,6 @@ class TravelListWidget(QWidget):
     def editSignal(self) -> None:
         self.updateLayout()
 
-
-
-    """
-    def addTravel(self,travel:Travel) -> None:
-        travel_widget = TravelWidget(travel)
-        self.main_layout.addWidget(travel_widget)
-
-    def editTravel(self,old_travel:Travel,new_travel:Travel) -> None:
-        # set new travel
-        for widget_index in self.main_layout.count():
-            widget = self.main_layout.itemAt(widget_index).widget()
-            
-            if type(widget) == type(TravelWidget):
-                if widget.travel == old_travel:
-                    new_widget = TravelWidget(new_travel)
-                    widget = new_widget
-            print('err : can not edit travel')
-
-    def removeTravel(self,travel:Travel) -> None:
-        pass
-    """
-
 class TravelEditorWin(QWidget):
     close_signal = pyqtSignal()
     delet_signal = pyqtSignal()
@@ -452,7 +438,7 @@ class TravelEditorWin(QWidget):
         self.prmtr_editor.setDistance(travel.distance)
         self.prmtr_editor.setPrice(travel.price)
         self.prmtr_editor.setReturnState(travel.rtrn_state)
-        
+
     def getUserTravel(self) -> Travel | bool:
         date = self.prmtr_editor.getDate()
         start_adress = self.start_editor.getAdress()
@@ -587,13 +573,14 @@ class HistoricWin(QWidget):
         self.main_layout.addWidget(self.my_scroll)
         self.main_layout.addLayout(self.btn_layout)
         self.setLayout(self.main_layout) 
-        
+
     def onSearchSignal(self) -> None: 
         """Delete all widgets of layout then add new widgets from travel_list"""
         self.travel_list_widget.updateDisplay(self.search_bar.text())
 
     def addTravel(self) -> None:
         self.travel_editor_win = TravelEditorWin()
+        self.travel_editor_win.prmtr_editor.setPreviousDate()
         self.travel_editor_win.show()
         self.travel_editor_win.close_signal.connect(self.onEditorClose)
 
@@ -604,4 +591,3 @@ class HistoricWin(QWidget):
     def generate(self) -> None:
         self.gen_win = GenWin()
         self.gen_win.show()
-

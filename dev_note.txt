@@ -1,6 +1,5 @@
 
 kilometrage pré-remplit : ne pas doubler la distance dans la GUI -> travel csv file
-pré remplissage de la date
 
 Ajouter une page adresse 
 
