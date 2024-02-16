@@ -148,8 +148,6 @@ class Excel():
         self.setSheet(self.start_date,self.end_date,self.border,self.bold_font)
         self.setTab(self.tab_dict,self.border,self.bold_font)
         self.setBottomTab(self.end_tab_row,self.border,self.bold_font)
-
-        self.wb.save(self.root.ndf_excel)
         
     def getTabDict(self,start_row,start_date,end_date) -> dict:
         start_date = datetime.strptime(start_date,'%d/%m/%Y')
@@ -245,3 +243,6 @@ class Excel():
         
         total = f'=sum(H{self.start_tab_row+1}:H{self.end_tab_row})'
         self.sh.cell(row=tab['Total Déplacement'], column = len(self.tab_dict),value = total)
+
+    def save(self) -> None:
+        self.wb.save(self.root.ndf_excel)

@@ -1,13 +1,14 @@
 from PyQt5.QtWidgets import (
     QWidget, QLineEdit, QLabel, QPushButton, QVBoxLayout, 
     QGroupBox,QButtonGroup,QRadioButton,QFormLayout,
-    QCheckBox,QSpacerItem,QSizePolicy,
+    QCheckBox,QSpacerItem,QSizePolicy,QComboBox,
     QCompleter,QHBoxLayout,QScrollArea,
     )
 from PyQt5.QtCore import pyqtSignal,Qt
 from PyQt5.QtGui import QFont
 
 from custom_object import *
+import calendar
 
 import os
 
@@ -437,14 +438,29 @@ class GenWin(QWidget):
         self.setLayout(main_lay)
 
         form_lay = QFormLayout()
+
         self.start_date_label = QLineEdit()
         self.end_date_label = QLineEdit()
-        form_lay.addRow('Date de début', self.start_date_label)
-        form_lay.addRow('Date de fin', self.end_date_label)
+
+        self.month_selector = QComboBox()
+        self.month_selector.currentIndexChanged.connect(self.onComboChange)
+        for month in list(calendar.month_name):
+            self.month_selector.addItem(month)
+
         gen_btn = QPushButton('Générer')
         gen_btn.clicked.connect(self.generate)
+
+        form_lay.addRow('Mois',self.month_selector)
+        form_lay.addRow('Date de début', self.start_date_label)
+        form_lay.addRow('Date de fin', self.end_date_label)
         main_lay.addLayout(form_lay)
         main_lay.addWidget(gen_btn)
+
+    def onComboChange(self,index) -> None:
+        if index != 0: state = False
+        else: state = True
+        self.start_date_label.setEnabled(state)
+        self.end_date_label.setEnabled(state)
 
     def tryDate(self,date) -> bool:
         if len(date) != 10: 
@@ -459,12 +475,22 @@ class GenWin(QWidget):
         except: return(False)
 
     def generate(self) -> None:
-        start_date = self.start_date_label.text()
-        end_date = self.end_date_label.text()
-        if self.tryDate(start_date) and self.tryDate(end_date): 
-            excel_win = Excel(start_date,end_date)
-            self.close()
-            #os.system(f"start EXCEL.EXE {self.root.ndf_excel}")
+        month_nb = self.month_selector.currentIndex()
+        if month_nb != 0:
+            end_day = calendar.monthrange(2024,month_nb)[1]
+            if month_nb < 10: month_nb = f'0{month_nb}'
+            start_date = f'01/{month_nb}/2024'
+            end_date = f'{end_day}/{month_nb}/2024'
+        else:
+            if not(self.tryDate(self.start_date_label.text()) and self.tryDate(self.end_date_label.text())): 
+                print("error")
+                pass
+            else:
+                start_date = self.start_date_label.text()
+                end_date = self.end_date_label.text() 
+        excel_win = Excel(start_date,end_date)
+        excel_win.save()
+        self.close()     
         
 class HistoricWin(QWidget):
     """Class used to show all travel for historic"""
