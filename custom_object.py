@@ -33,9 +33,6 @@ class Travel(): # A modifier
                 self.end_adress.name,self.end_adress.street,self.end_adress.postal,self.end_adress.city,
                 self.distance,self.price,self.rtrn_state])
     
-    def getString(self) ->str:
-        return(' '.join(self.list[:3]))  # without distance and rtrn_state
-    
 class Data():
     """A class used to get and set saved file datas"""    
     def __init__(self) -> None:
