@@ -14,12 +14,14 @@ import os
 
 class AdressEditorWidget(QGroupBox):
     """Custom wigdget used to edit Adress in Travel Editor Window"""
+    edit_signal = pyqtSignal()
     def __init__(self,title) -> None:
         super().__init__()
         self.root = Roots()
         self.data = Data()
-        self.setWidgetStyle(title)
         self.adress_list = self.data.getAdressList(self.root.adress)
+        self.adress_edited = False
+        self.setWidgetStyle(title)
         self.UIComponents()
 
     def setWidgetStyle(self,title) -> None:
@@ -75,6 +77,11 @@ class AdressEditorWidget(QGroupBox):
         self.name_completer.activated.connect(self.onSearch)
         self.street_completer.activated.connect(self.onSearch)
 
+        self.name_edit.textChanged.connect(self.onTextEdit)
+        self.street_edit.textChanged.connect(self.onTextEdit)
+        self.postal_edit.textChanged.connect(self.onTextEdit)
+        self.city_edit.textChanged.connect(self.onTextEdit)
+
         # Layout
         self.btn_layout = QHBoxLayout()
         self.btn_layout.addWidget(self.new_btn)
@@ -93,6 +100,7 @@ class AdressEditorWidget(QGroupBox):
         self.setLayout(self.main_layout)
 
     def getCompleterLists(self,adress_list:list[Adress]) -> list[list]:
+        """Return just name and street adress of Adress for completer"""
         name_list = []
         street_list = []
         for adress in adress_list:
@@ -116,10 +124,7 @@ class AdressEditorWidget(QGroupBox):
         """When user find an adress name in Completer -> set full adress prmtr"""
         for adress in self.adress_list:
             if text == adress.name or text == adress.street:
-                self.name_edit.setText(adress.name)
-                self.street_edit.setText(adress.street)
-                self.postal_edit.setText(adress.postal)
-                self.city_edit.setText(adress.city)
+                self.setAdress(adress)
 
     def enableFormLay(self,state:bool) -> None:
         for i in range(self.form_layout.count()):
@@ -136,13 +141,19 @@ class AdressEditorWidget(QGroupBox):
         street = self.street_edit.text()
         postal = self.postal_edit.text()
         city = self.city_edit.text()
-        if name != '' and street != '' and city != '':
+        if name and street and city and postal != '':
             try:
                 int(postal)
                 adress = Adress(name,street,postal,city)
                 return(adress)
             except: return(False)
         else: return(False)
+
+    def onTextEdit(self) -> None:
+        if self.getAdress() != False:
+            self.adress_edited = True
+            self.edit_signal.emit()
+        else : self.adress_edited = False
 
 class PrmtrEditorWidget(QGroupBox):
     """Custom wigdget used to edit prmtrs in Travel Editor Window"""
@@ -245,6 +256,110 @@ class PrmtrEditorWidget(QGroupBox):
         else: return_state = 'false'
         return(return_state)
     
+class TravelEditorWin(QWidget):
+    close_signal = pyqtSignal()
+    delet_signal = pyqtSignal()
+    def __init__(self) -> None:
+        super().__init__()
+        self.data = Data()
+        self.root = Roots()
+        self.adress_list = self.data.getAdressList(self.root.adress)
+        self.UIComponents()
+        self.old_travel = None
+
+    def UIComponents(self)-> None:
+        """Set graphical components"""
+        # Widgets
+        self.start_editor = AdressEditorWidget('Départ')
+        self.end_editor = AdressEditorWidget('Arrivée')
+        self.prmtr_editor = PrmtrEditorWidget()
+        self.err_label= QLabel()
+        save_btn = QPushButton('Enregistrer')
+        delet_btn = QPushButton('Supprimer')
+
+        # Style
+        self.err_label.setStyleSheet('color:red')
+        self.err_label.setAlignment(Qt.AlignHCenter)
+
+        # Connect
+        save_btn.clicked.connect(self.save)
+        delet_btn.clicked.connect(self.delet_signal.emit)
+
+        self.start_editor.edit_signal.connect(self.setDistance)
+        self.end_editor.edit_signal.connect(self.setDistance)
+
+        # Lay
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.start_editor)
+        main_layout.addWidget(self.end_editor)
+        main_layout.addWidget(self.prmtr_editor)
+        main_layout.addWidget(self.err_label)
+        main_layout.addWidget(save_btn)
+        main_layout.addWidget(delet_btn)
+        self.setLayout(main_layout)
+
+    def getAdressNameList(self,adress_list) -> str:
+        adress_name_list = []
+        for adress in adress_list:
+            adress_name_list.append(adress.name)
+        return(adress_name_list)
+
+    def setUserTravel(self,travel:Travel):
+        self.old_travel=travel
+        self.start_editor.setAdress(travel.start_adress)
+        self.end_editor.setAdress(travel.end_adress)
+        self.prmtr_editor.setDate(travel.date)
+        self.prmtr_editor.setDistance(travel.distance)
+        self.prmtr_editor.setPrice(travel.price)
+        self.prmtr_editor.setReturnState(travel.rtrn_state)
+
+    def setDistance(self) -> None:
+        print('try')
+        """If adres editors have adresses and travel already exist -> fill distance Label"""
+        if self.start_editor.adress_edited and self.end_editor.adress_edited:
+            print('get adress')
+            saved_travel_list = self.data.getDataList(self.root.travel)
+            start_adress = self.start_editor.getAdress()
+            end_adress = self.end_editor.getAdress()
+            for travel in saved_travel_list[1:]:
+                if start_adress.name and end_adress.name in travel:
+                    if start_adress.name != end_adress.name:
+                        self.prmtr_editor.setDistance(travel[2]) 
+
+    def getUserTravel(self) -> Travel | bool:
+        date = self.prmtr_editor.getDate()
+        start_adress = self.start_editor.getAdress()
+        end_adress = self.end_editor.getAdress()
+        distance = self.prmtr_editor.getDistance()
+        price = self.prmtr_editor.getPrice()
+        return_state = self.prmtr_editor.getReturnState()
+        if not(start_adress and end_adress and distance and price):
+            return(False)
+        else: 
+            travel = Travel(date,start_adress,end_adress,distance,price,return_state)
+            return(travel)
+
+    def save(self):
+        travel = self.getUserTravel()
+        if travel != False:
+            self.data.saveTravel(self.root.historic,self.old_travel,travel)
+            # If adress in travel are new -> save adress in adress.csv
+            adress_name_list = self.getAdressNameList(self.adress_list)
+            for adress in [travel.start_adress,travel.end_adress]:
+                if not(adress.name in adress_name_list):
+                    self.data.saveAdress(self.root.adress,adress)
+            self.close_signal.emit()
+        else: self.err_label.setText('format error')
+
+    def newTravel(self,new_travel:Travel) -> bool:
+        travel_list = self.data.getTravelList()
+        for travel in travel_list:
+            if new_travel.start_adress and new_travel.end_adress in travel:
+                self.prmtr_editor.setDistance(travel.distance)
+
+    def deletTravel(self):
+        pass
+
 class TravelWidget(QGroupBox):
     """Custom wigdget used to show Travel object"""
     edit_signal = pyqtSignal()
@@ -326,7 +441,7 @@ class TravelWidget(QGroupBox):
         self.editor_win = TravelEditorWin()
         self.editor_win.setUserTravel(self.travel)
         self.editor_win.close_signal.connect(self.onEditorClose)
-        self.editor_win.delet_signal.connect()
+        #self.editor_win.delet_signal.connect()
         self.editor_win.show()
 
     def onEditorClose(self):
@@ -384,88 +499,6 @@ class TravelListWidget(QWidget):
 
     def editSignal(self) -> None:
         self.updateLayout()
-
-class TravelEditorWin(QWidget):
-    close_signal = pyqtSignal()
-    delet_signal = pyqtSignal()
-    def __init__(self) -> None:
-        super().__init__()
-        self.data = Data()
-        self.root = Roots()
-        self.adress_list = self.data.getAdressList(self.root.adress)
-        self.UIComponents()
-        self.old_travel = None
-
-    def UIComponents(self)-> None:
-        """Set graphical components"""
-        # Widgets
-        self.start_editor = AdressEditorWidget('Départ')
-        self.end_editor = AdressEditorWidget('Arrivée')
-        self.prmtr_editor = PrmtrEditorWidget()
-        self.err_label= QLabel()
-        save_btn = QPushButton('Enregistrer')
-        delet_btn = QPushButton('Supprimer')
-
-        # Style
-        self.err_label.setStyleSheet('color:red')
-        self.err_label.setAlignment(Qt.AlignHCenter)
-
-        # Connect
-        save_btn.clicked.connect(self.save)
-        delet_btn.clicked.connect(self.delet_signal.emit)
-
-        # Lay
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.start_editor)
-        main_layout.addWidget(self.end_editor)
-        main_layout.addWidget(self.prmtr_editor)
-        main_layout.addWidget(self.err_label)
-        main_layout.addWidget(save_btn)
-        main_layout.addWidget(delet_btn)
-        self.setLayout(main_layout)
-
-    def getAdressNameList(self,adress_list) -> str:
-        adress_name_list = []
-        for adress in adress_list:
-            adress_name_list.append(adress.name)
-        return(adress_name_list)
-
-    def setUserTravel(self,travel:Travel):
-        self.old_travel=travel
-        self.start_editor.setAdress(travel.start_adress)
-        self.end_editor.setAdress(travel.end_adress)
-        self.prmtr_editor.setDate(travel.date)
-        self.prmtr_editor.setDistance(travel.distance)
-        self.prmtr_editor.setPrice(travel.price)
-        self.prmtr_editor.setReturnState(travel.rtrn_state)
-
-    def getUserTravel(self) -> Travel | bool:
-        date = self.prmtr_editor.getDate()
-        start_adress = self.start_editor.getAdress()
-        end_adress = self.end_editor.getAdress()
-        distance = self.prmtr_editor.getDistance()
-        price = self.prmtr_editor.getPrice()
-        return_state = self.prmtr_editor.getReturnState()
-        if not(start_adress and end_adress and distance and price):
-            return(False)
-        else: 
-            travel = Travel(date,start_adress,end_adress,distance,price,return_state)
-            return(travel)
-
-    def save(self):
-        travel = self.getUserTravel()
-        if travel != False:
-            self.data.saveTravel(self.root.historic,self.old_travel,travel)
-            # If adress in travel are new -> save adress in adress.csv
-            adress_name_list = self.getAdressNameList(self.adress_list)
-            for adress in [travel.start_adress,travel.end_adress]:
-                if not(adress.name in adress_name_list):
-                    self.data.saveAdress(self.root.adress,adress)
-            self.close_signal.emit()
-        else: self.err_label.setText('format error')
-
-    def deletTravel(self):
-        pass
 
 class GenWin(QWidget):
     def __init__(self) -> None:

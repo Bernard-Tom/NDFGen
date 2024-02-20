@@ -116,6 +116,7 @@ class Roots():
         self.historic = './data/historic.csv'
         self.adress = './data/adress.csv'
         self.user_data = './data/user_data.csv'
+        self.travel = './data/travel.csv'
         self.ndf_excel = './data/NDF.xlsx'
 
 class Excel():
@@ -240,3 +241,4 @@ class Excel():
 
     def save(self) -> None:
         self.wb.save(self.root.ndf_excel)
+
