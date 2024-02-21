@@ -94,6 +94,16 @@ class Data():
             self.writeData(self.adress_root,data)
             print(f'save new adress : {row} in {self.adress_root}')
 
+    def deleteTravel(self,travel:Travel) -> None:
+        row_list = self.getDataList(self.historic_root)
+        row = travel.getRow()
+        if row in row_list:
+            index = row_list.index(row)
+            row_list.pop(index)
+            print(f'delete old row at index {index} in {self.historic_root}')
+            self.writeData(self.historic_root,row_list)
+
+
     def saveToHistoric(self,old_travel:Travel,new_travel:Travel) -> None:
         """Sauvegarde un travel dans historic.csv"""
         row_list= self.getDataList(self.historic_root)

@@ -265,7 +265,7 @@ class TravelEditorWin(QWidget):
         self.prmtr_editor = PrmtrEditorWidget()
         self.err_label= QLabel()
         save_btn = QPushButton('Enregistrer')
-        delet_btn = QPushButton('Supprimer')
+        delete_btn = QPushButton('Supprimer')
 
         # Style
         self.err_label.setStyleSheet('color:red')
@@ -273,7 +273,7 @@ class TravelEditorWin(QWidget):
 
         # Connect
         save_btn.clicked.connect(self.save)
-        delet_btn.clicked.connect(self.delet_signal.emit)
+        delete_btn.clicked.connect(self.deleteTravel)
 
         self.start_editor.edit_signal.connect(self.onAdressEdit)
         self.end_editor.edit_signal.connect(self.onAdressEdit)
@@ -285,7 +285,7 @@ class TravelEditorWin(QWidget):
         main_layout.addWidget(self.prmtr_editor)
         main_layout.addWidget(self.err_label)
         main_layout.addWidget(save_btn)
-        main_layout.addWidget(delet_btn)
+        main_layout.addWidget(delete_btn)
         self.setLayout(main_layout)
 
     def getAdressNameList(self,adress_list) -> str:
@@ -335,8 +335,10 @@ class TravelEditorWin(QWidget):
             self.close_signal.emit()
         else: self.err_label.setText('format error')
 
-    def deletTravel(self):
-        pass
+    def deleteTravel(self):
+        if self.old_travel != None:
+            self.data.deleteTravel(self.old_travel)
+            self.close_signal.emit()
 
 class TravelWidget(QGroupBox):
     """Custom wigdget used to show Travel object"""
@@ -418,12 +420,9 @@ class TravelWidget(QGroupBox):
     def onEditClicked(self) -> None:
         self.editor_win = TravelEditorWin()
         self.editor_win.setUserTravel(self.travel)
-        self.editor_win.close_signal.connect(self.onEditorClose)
+        self.editor_win.close_signal.connect(self.edit_signal.emit)
         #self.editor_win.delet_signal.connect()
         self.editor_win.show()
-
-    def onEditorClose(self):
-        self.edit_signal.emit()
 
 class TravelListWidget(QWidget):
     """Custom Widget used to show the list of Travel widget list"""
