@@ -79,10 +79,10 @@ class AdressEditorWidget(QGroupBox):
         self.name_completer.activated.connect(self.onSearch)
         self.street_completer.activated.connect(self.onSearch)
 
-        self.name_edit.textChanged.connect(self.onTextEdit)
-        self.street_edit.textChanged.connect(self.onTextEdit)
-        self.postal_edit.textChanged.connect(self.onTextEdit)
-        self.city_edit.textChanged.connect(self.onTextEdit)
+        self.name_edit.textChanged.connect(self.edit_signal.emit)
+        self.street_edit.textChanged.connect(self.edit_signal.emit)
+        self.postal_edit.textChanged.connect(self.edit_signal.emit)
+        self.city_edit.textChanged.connect(self.edit_signal.emit)
 
         # Layout
         self.btn_layout = QHBoxLayout()
@@ -150,13 +150,6 @@ class AdressEditorWidget(QGroupBox):
                 return(adress)
             else: return False
         except: return(False)
-
-
-    def onTextEdit(self) -> None:
-        if self.getAdress() != False:
-            self.adress_edited = True
-            self.edit_signal.emit()
-        else : self.adress_edited = False
 
 class PrmtrEditorWidget(QGroupBox):
     """Custom wigdget used to edit prmtrs in Travel Editor Window"""
@@ -282,8 +275,8 @@ class TravelEditorWin(QWidget):
         save_btn.clicked.connect(self.save)
         delet_btn.clicked.connect(self.delet_signal.emit)
 
-        self.start_editor.edit_signal.connect(self.setDistance)
-        self.end_editor.edit_signal.connect(self.setDistance)
+        self.start_editor.edit_signal.connect(self.onAdressEdit)
+        self.end_editor.edit_signal.connect(self.onAdressEdit)
 
         # Lay
         main_layout = QVBoxLayout()
@@ -310,17 +303,16 @@ class TravelEditorWin(QWidget):
         self.prmtr_editor.setPrice(travel.price)
         self.prmtr_editor.setReturnState(travel.rtrn_state)
 
-    def setDistance(self) -> None:
-        """If adres editors have adresses and travel already exist -> fill distance Label"""
-        if self.start_editor.adress_edited and self.end_editor.adress_edited:
-            saved_travel_list = self.data.getDataList(self.root.travel)
-            start_adress = self.start_editor.getAdress()
-            end_adress = self.end_editor.getAdress()
-            for travel in saved_travel_list[1:]:
-                if start_adress.name in travel and end_adress.name in travel and start_adress.name != end_adress.name:
-                    self.prmtr_editor.setDistance(travel[2])
-                    break
-                else: self.prmtr_editor.setDistance('')
+    def onAdressEdit(self) -> None:
+        """If adress in adress editor changed -> check if distance can be show by reading in travel.csv"""
+        start_adress = self.start_editor.getAdress()
+        end_adress = self.end_editor.getAdress()
+        if (start_adress and end_adress != False) and (start_adress.name != end_adress.name):
+            distance = self.data.getTravelDistance(start_adress.name,end_adress.name)
+            if distance != False:
+                self.prmtr_editor.setDistance(distance)
+            else: self.prmtr_editor.setDistance('')
+        else: self.prmtr_editor.setDistance('')
 
     def getUserTravel(self) -> Travel | bool:
         date = self.prmtr_editor.getDate()
@@ -342,12 +334,6 @@ class TravelEditorWin(QWidget):
             self.data.saveToTravel(travel) # Save travel in travel.csv if it's new one
             self.close_signal.emit()
         else: self.err_label.setText('format error')
-
-    def newTravel(self,new_travel:Travel) -> bool:
-        travel_list = self.data.getTravelList()
-        for travel in travel_list:
-            if new_travel.start_adress and new_travel.end_adress in travel:
-                self.prmtr_editor.setDistance(travel.distance)
 
     def deletTravel(self):
         pass

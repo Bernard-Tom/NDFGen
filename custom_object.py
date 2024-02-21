@@ -134,12 +134,20 @@ class Data():
         end_name = travel.end_adress.name
         distance = travel.distance
         for row in data[1:]:
-            if not(start_name and end_name in row): # Si les deux éléments ne sont pas dans la liste
+            if not(start_name in row and end_name in row): # Si les deux éléments ne sont pas dans la liste
                 new_row = [start_name,end_name,distance]
                 data.append(new_row)
                 self.writeData(self.travel_root,data)
                 print(f'save new travel {new_row} in {self.travel_root}')
                 break
+
+    def getTravelDistance(self,start_adress_name:str,end_adress_name:str) -> str|bool:
+        """Check if travel is in travel.csv and return distance"""
+        travel_list = self.getDataList(self.travel_root)[1:]
+        for row in travel_list:
+            if start_adress_name in row and end_adress_name in row:
+                return row[2]
+        return False
 
 class Roots():
     def __init__(self) -> None:
