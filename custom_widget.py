@@ -143,13 +143,14 @@ class AdressEditorWidget(QGroupBox):
         street = self.street_edit.text()
         postal = self.postal_edit.text()
         city = self.city_edit.text()
-        if name and street and city and postal != '':
-            try:
+        try:
+            if name and street and city and postal != '':
                 int(postal)
                 adress = Adress(name,street,postal,city)
                 return(adress)
-            except: return(False)
-        else: return(False)
+            else: return False
+        except: return(False)
+
 
     def onTextEdit(self) -> None:
         if self.getAdress() != False:
@@ -257,11 +258,11 @@ class TravelEditorWin(QWidget):
     delet_signal = pyqtSignal()
     def __init__(self) -> None:
         super().__init__()
+        self.old_travel = None
         self.data = Data()
         self.root = Roots()
         self.adress_list = self.data.getAdressList(self.root.adress)
         self.UIComponents()
-        self.old_travel = None
 
     def UIComponents(self)-> None:
         """Set graphical components"""
@@ -328,21 +329,17 @@ class TravelEditorWin(QWidget):
         distance = self.prmtr_editor.getDistance()
         price = self.prmtr_editor.getPrice()
         return_state = self.prmtr_editor.getReturnState()
-        if not(start_adress and end_adress and distance and price):
-            return(False)
-        else: 
-            travel = Travel(date,start_adress,end_adress,distance,price,return_state)
-            return(travel)
+        if date and start_adress and end_adress and distance and price and return_state is not False:
+            return Travel(date,start_adress,end_adress,distance,price,return_state) 
+        else: return(False)
 
     def save(self):
         travel = self.getUserTravel()
         if travel != False:
-            self.data.saveTravel(self.root.historic,self.old_travel,travel)
-            # If adress in travel are new -> save adress in adress.csv
-            adress_name_list = self.getAdressNameList(self.adress_list)
-            for adress in [travel.start_adress,travel.end_adress]:
-                if not(adress.name in adress_name_list):
-                    self.data.saveAdress(self.root.adress,adress)
+            self.data.saveToHistoric(self.old_travel,travel)
+            self.data.saveAdress(travel.start_adress) # Save adress in adress.csv if they are new ones
+            self.data.saveAdress(travel.end_adress)
+            self.data.saveToTravel(travel) # Save travel in travel.csv if it's new one
             self.close_signal.emit()
         else: self.err_label.setText('format error')
 

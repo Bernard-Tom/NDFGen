@@ -36,7 +36,11 @@ class Travel(): # A modifier
 class Data():
     """A class used to get and set saved file datas"""    
     def __init__(self) -> None:
-        pass
+        self.historic_root = './data/historic.csv'
+        self.adress_root = './data/adress.csv'
+        self.user_data_root = './data/user_data.csv'
+        self.travel_root = './data/travel.csv'
+        self.ndf_excel_root = './data/NDF.xlsx'
     
     def getDataList(self,root) -> list[list[str]]:
         # return a list of file row with header
@@ -81,14 +85,18 @@ class Data():
             for row in data:
                 writer.writerow(row)
 
-    def saveAdress(self,root:str,adress:Adress) -> None:
-        data = self.getDataList(root)
-        new_row = [adress.name,adress.street,adress.postal,adress.city]
-        data.append(new_row)
-        self.writeData(root,data)
+    def saveAdress(self,adress:Adress) -> None:
+        """Save adress in adress.csv if it's new adress"""
+        data = self.getDataList(self.adress_root)
+        row = [adress.name,adress.street,adress.postal,adress.city]
+        if not(row in data):
+            data.append(row)
+            self.writeData(self.adress_root,data)
+            print(f'save new adress : {row} in {self.adress_root}')
 
-    def saveTravel(self,root,old_travel:Travel,new_travel:Travel) -> None:
-        row_list= self.getDataList(root)
+    def saveToHistoric(self,old_travel:Travel,new_travel:Travel) -> None:
+        """Sauvegarde un travel dans historic.csv"""
+        row_list= self.getDataList(self.historic_root)
         new_row = new_travel.getRow()
         
         if old_travel != None:
@@ -97,6 +105,7 @@ class Data():
             if old_row in row_list:
                 index = row_list.index(old_row)
                 row_list.pop(index)
+                print(f'delete old row at index {index} in {self.historic_root}')
 
         # On parcour la liste des travel a l'envers, pour chaque date on compare
         if len(row_list) > 1:
@@ -116,7 +125,21 @@ class Data():
         else:
             row_list.append(new_row)
 
-        self.writeData(root,row_list)
+        self.writeData(self.historic_root,row_list)
+        print('save new travel in historic')
+
+    def saveToTravel(self,travel:Travel) -> None:
+        data = self.getDataList(self.travel_root)
+        start_name = travel.start_adress.name
+        end_name = travel.end_adress.name
+        distance = travel.distance
+        for row in data[1:]:
+            if not(start_name and end_name in row): # Si les deux éléments ne sont pas dans la liste
+                new_row = [start_name,end_name,distance]
+                data.append(new_row)
+                self.writeData(self.travel_root,data)
+                print(f'save new travel {new_row} in {self.travel_root}')
+                break
 
 class Roots():
     def __init__(self) -> None:
