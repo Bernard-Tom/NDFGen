@@ -87,29 +87,36 @@ class Data():
         data.append(new_row)
         self.writeData(root,data)
 
-    def getSortedlList(self,list:list) -> list:
-        """Return a list sorted throw the date"""
-        date_dict = {}
-        for data in list: 
-            date_dict[datetime.strptime(data[0],'%d/%m/%Y')] = data
-
-        for e,i in zip (sorted(date_dict),range(len(sorted(date_dict)))):
-            list[i] = date_dict[e]
-        return list
-
-    def saveTravel(self,root,old_travel:Travel,travel:Travel) -> None:
-        data = self.getDataList(root)
-        new_row = travel.getRow()
-        # If edit mode
+    def saveTravel(self,root,old_travel:Travel,new_travel:Travel) -> None:
+        row_list= self.getDataList(root)
+        new_row = new_travel.getRow()
+        
         if old_travel != None:
-            old_travel_list = old_travel.getRow()
-            if old_travel_list in data:
-                data[data.index(old_travel_list)] = new_row # +1 beacause data return header too 
-        else: data.append(new_row)
-        sorted_data = self.getSortedlList(data[1:]) # no take the header
-        for i in range(len(data)-1):
-            data[i+1] = sorted_data[i]
-        self.writeData(root,data)    
+            old_row = old_travel.getRow()
+            # Si on modifie l'élément on commence par supprimer l'ancien élément
+            if old_row in row_list:
+                index = row_list.index(old_row)
+                row_list.pop(index)
+
+        # On parcour la liste des travel a l'envers, pour chaque date on compare
+        if len(row_list) > 1:
+            for row in reversed(row_list):
+                index = row_list.index(row)
+                # Si on a parcouru toute la liste sans rien comparer
+                if index == 0:
+                    row_list.insert(1,new_row)
+                    break
+                else:
+                    date = datetime.strptime(row[0],'%d/%m/%Y')
+                    new_date = datetime.strptime(new_row[0],'%d/%m/%Y')
+                    if new_date >= date:
+                        row_list.insert(index+1,new_row)
+                        break
+        # Démarage
+        else:
+            row_list.append(new_row)
+
+        self.writeData(root,row_list)
 
 class Roots():
     def __init__(self) -> None:

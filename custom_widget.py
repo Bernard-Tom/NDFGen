@@ -10,6 +10,8 @@ from PyQt5.QtGui import QFont
 from custom_object import *
 import calendar
 
+from datetime import datetime
+
 import os
 
 class AdressEditorWidget(QGroupBox):
@@ -227,15 +229,9 @@ class PrmtrEditorWidget(QGroupBox):
 
 ####  Get Data
     def getDate(self) -> str | bool:
-        date = self.date_edit.text()
-        if len(date) != 10: 
-            return(False)
-        if [2,5] != [n for (n,e) in enumerate(date) if e =='/']:
-            return(False)
         try:
-            int(date[:2])
-            int(date[3:5])
-            int(date[6:10])
+            date = self.date_edit.text()
+            travel_date = datetime.strptime(date,'%d/%m/%Y')
             return(date)
         except: return(False)
     
@@ -314,17 +310,16 @@ class TravelEditorWin(QWidget):
         self.prmtr_editor.setReturnState(travel.rtrn_state)
 
     def setDistance(self) -> None:
-        print('try')
         """If adres editors have adresses and travel already exist -> fill distance Label"""
         if self.start_editor.adress_edited and self.end_editor.adress_edited:
-            print('get adress')
             saved_travel_list = self.data.getDataList(self.root.travel)
             start_adress = self.start_editor.getAdress()
             end_adress = self.end_editor.getAdress()
             for travel in saved_travel_list[1:]:
-                if start_adress.name and end_adress.name in travel:
-                    if start_adress.name != end_adress.name:
-                        self.prmtr_editor.setDistance(travel[2]) 
+                if start_adress.name in travel and end_adress.name in travel and start_adress.name != end_adress.name:
+                    self.prmtr_editor.setDistance(travel[2])
+                    break
+                else: self.prmtr_editor.setDistance('')
 
     def getUserTravel(self) -> Travel | bool:
         date = self.prmtr_editor.getDate()
