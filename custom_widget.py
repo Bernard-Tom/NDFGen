@@ -485,6 +485,7 @@ class GenWin(QWidget):
 
     def UIComponents(self) -> None:
         # Widgets
+        self.year_label = QLineEdit('2024')
         self.start_date_label = QLineEdit()
         self.end_date_label = QLineEdit()
         self.month_selector = self.getSelector()
@@ -496,6 +497,7 @@ class GenWin(QWidget):
 
         # Lay
         form_lay = QFormLayout()
+        form_lay.addRow('Année',self.year_label)
         form_lay.addRow('Mois',self.month_selector)
         form_lay.addRow('Date de début', self.start_date_label)
         form_lay.addRow('Date de fin', self.end_date_label)
@@ -531,11 +533,12 @@ class GenWin(QWidget):
 
     def generate(self) -> None:
         month_nb = self.month_selector.currentIndex()
+        year = self.year_label.text()
         if month_nb != 0:
-            end_day = calendar.monthrange(2024,month_nb)[1]
+            end_day = calendar.monthrange(int(year),month_nb)[1]
             if month_nb < 10: month_nb = f'0{month_nb}'
-            start_date = f'01/{month_nb}/2024'
-            end_date = f'{end_day}/{month_nb}/2024'
+            start_date = f'01/{month_nb}/{year}'
+            end_date = f'{end_day}/{month_nb}/{year}'
         else:
             if not(self.tryDate(self.start_date_label.text()) and self.tryDate(self.end_date_label.text())): 
                 print("error")

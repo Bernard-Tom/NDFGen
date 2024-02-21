@@ -103,7 +103,6 @@ class Data():
             print(f'delete old row at index {index} in {self.historic_root}')
             self.writeData(self.historic_root,row_list)
 
-
     def saveToHistoric(self,old_travel:Travel,new_travel:Travel) -> None:
         """Sauvegarde un travel dans historic.csv"""
         row_list= self.getDataList(self.historic_root)
@@ -221,6 +220,7 @@ class Excel():
                         if df['rtrn_state'][row_index]:
                             distance = float(df['distance'][row_index])*2
                             tab_dict[dict_key].append(str(distance))
+                        else: tab_dict[dict_key].append(df[csv_key][row_index])
                     else: tab_dict[dict_key].append(df[csv_key][row_index])
             else: pass
 
@@ -264,11 +264,14 @@ class Excel():
 
     def setTab(self,tab_dict:dict,border:Border,font:Font) -> None:
         # Ecrit le tableau de donné
+        print(self.tab_dict)
         for key,column in zip (self.tab_dict.keys(),range(1,len(tab_dict)+1)): # Ecrit le header
             cell = self.sh.cell(row = self.start_tab_row,column = column, value = key)
             cell.border = border
             cell.font = font
+            print(list(tab_dict.values())[0])
             for row in range(len(list(tab_dict.values())[0])): # Ecrit les données
+                print(row)
                 cell = self.sh.cell(row = self.start_tab_row+1+row, column = column, value = tab_dict[key][row])
                 cell.border = border
 
