@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 import pandas as pd
 from openpyxl import Workbook
-from openpyxl.styles import Font,Border,Side
+from openpyxl.styles import Font,Border,Side,Alignment
 
 class Adress():
     """Class used to represent an Adress"""
@@ -253,6 +253,8 @@ class Excel():
             self.sh[key].border = border
             self.sh[key].font = font
 
+        self.sh["A1"].alignment = Alignment(horizontal="center")
+
         self.sh.merge_cells('A1:F1')
         self.sh.merge_cells('G1:H1')
         self.sh.merge_cells('C3:H3')
@@ -264,14 +266,11 @@ class Excel():
 
     def setTab(self,tab_dict:dict,border:Border,font:Font) -> None:
         # Ecrit le tableau de donné
-        print(self.tab_dict)
         for key,column in zip (self.tab_dict.keys(),range(1,len(tab_dict)+1)): # Ecrit le header
             cell = self.sh.cell(row = self.start_tab_row,column = column, value = key)
             cell.border = border
             cell.font = font
-            print(list(tab_dict.values())[0])
             for row in range(len(list(tab_dict.values())[0])): # Ecrit les données
-                print(row)
                 cell = self.sh.cell(row = self.start_tab_row+1+row, column = column, value = tab_dict[key][row])
                 cell.border = border
 
