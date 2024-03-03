@@ -219,7 +219,7 @@ class Excel():
                 for csv_key,dict_key in zip (df_columns,tab_dict.keys()):
                     if dict_key == 'Km/AR':
                         if df['rtrn_state'][row_index]:
-                            distance = float(df['distance'][row_index])*2
+                            distance = int(float(df['distance'][row_index])*2)
                             tab_dict[dict_key].append(str(distance))
                         else: tab_dict[dict_key].append(df[csv_key][row_index])
                     else: tab_dict[dict_key].append(df[csv_key][row_index])
@@ -277,7 +277,7 @@ class Excel():
 
     def setBottomTab(self,start_bottom_row,border:Border,font:Font) -> None:
         tab = {'Déplacement divers':start_bottom_row+1,
-               'Total parkin':start_bottom_row+2,
+               'Total parking':start_bottom_row+2,
                'Total Déplacement':start_bottom_row+3}
         
         for key in tab.keys():
