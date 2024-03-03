@@ -1,9 +1,4 @@
-
-kilometrage pré-remplit : ne pas doubler la distance dans la GUI -> travel csv file
-
 Ajouter une page adresse 
-
-ajouter suppression
 
 Création de fichiers csv complet :
 . Script récupération liste des adresses enregistrés : adress.csv

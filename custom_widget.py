@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QWidget, QLineEdit, QLabel, QPushButton, QVBoxLayout, 
     QGroupBox,QButtonGroup,QRadioButton,QFormLayout,
     QCheckBox,QSpacerItem,QSizePolicy,QComboBox,
-    QCompleter,QHBoxLayout,QScrollArea,
+    QCompleter,QHBoxLayout,QScrollArea,QFileDialog
     )
 from PyQt5.QtCore import pyqtSignal,Qt
 from PyQt5.QtGui import QFont
@@ -13,6 +13,7 @@ import calendar
 from datetime import datetime
 
 import os
+from pathlib import Path
 
 class AdressEditorWidget(QGroupBox):
     """Custom wigdget used to edit Adress in Travel Editor Window"""

@@ -169,6 +169,7 @@ class Roots():
 class Excel():
     """Class used to generate excel file"""
     def __init__(self,start_date,end_date) -> None: 
+        self.data = Data()
         self.start_date = start_date
         self.end_date = end_date
         self.root = Roots()
@@ -290,5 +291,5 @@ class Excel():
         self.sh.cell(row=tab['Total Déplacement'], column = len(self.tab_dict),value = total)
 
     def save(self) -> None:
-        self.wb.save(self.root.ndf_excel)
+        self.wb.save(self.data.ndf_excel_root)
 
