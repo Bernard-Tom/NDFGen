@@ -92,7 +92,6 @@ class Data():
         if not(row in data):
             data.append(row)
             self.writeData(self.adress_root,data)
-            print(f'save new adress : {row} in {self.adress_root}')
 
     def deleteTravel(self,travel:Travel) -> None:
         row_list = self.getDataList(self.historic_root)
@@ -100,7 +99,6 @@ class Data():
         if row in row_list:
             index = row_list.index(row)
             row_list.pop(index)
-            print(f'delete old row at index {index} in {self.historic_root}')
             self.writeData(self.historic_root,row_list)
 
     def saveToHistoric(self,old_travel:Travel,new_travel:Travel) -> None:
@@ -114,7 +112,6 @@ class Data():
             if old_row in row_list:
                 index = row_list.index(old_row)
                 row_list.pop(index)
-                print(f'delete old row at index {index} in {self.historic_root}')
 
         # On parcour la liste des travel a l'envers, pour chaque date on compare
         if len(row_list) > 1:
@@ -135,19 +132,21 @@ class Data():
             row_list.append(new_row)
 
         self.writeData(self.historic_root,row_list)
-        print('save new travel in historic')
 
     def saveToTravel(self,travel:Travel) -> None:
         data = self.getDataList(self.travel_root)
         start_name = travel.start_adress.name
         end_name = travel.end_adress.name
         distance = travel.distance
+        if len(data[1:]) == 0:
+            data.append([start_name,end_name,distance])
+            self.writeData(self.travel_root,data)
+            return 0
         for row in data[1:]:
             if not(start_name in row and end_name in row): # Si les deux éléments ne sont pas dans la liste
                 new_row = [start_name,end_name,distance]
                 data.append(new_row)
                 self.writeData(self.travel_root,data)
-                print(f'save new travel {new_row} in {self.travel_root}')
                 break
 
     def getTravelDistance(self,start_adress_name:str,end_adress_name:str) -> str|bool:
