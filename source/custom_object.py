@@ -34,7 +34,7 @@ class Travel(): # A modifier
                 self.distance,self.price,self.rtrn_state])
     
 class Data():
-    """A class used to get and set saved file datas"""    
+    """A class used to get and set saved file data"""    
     def __init__(self) -> None:
         self.historic_root = './data/historic.csv'
         self.adress_root = './data/adress.csv'
