@@ -1,5 +1,0 @@
-Ajouter une page adresse 
-
-Création de fichiers csv complet :
-. Script récupération liste des adresses enregistrés : adress.csv
-. Script pour récupérer la distance de toute les trajets possibles a partire des adresses de adress.csv : travel.csv : start_adress;end_adress;distance
