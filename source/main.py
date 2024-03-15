@@ -31,15 +31,8 @@ class MainWindow(QMainWindow):
         stackWidget.addWidget(historic_win)
         layout.addWidget(stackWidget)
 
-def main() -> None:
+if __name__ == '__main__':
     app = QApplication(sys.argv)
     w = MainWindow()
     w.show()
     app.exec()
-
-def setup() -> bool:
-    cwd = os.getcwd()
-    print()
-
-if __name__ == '__main__':
-    setup()

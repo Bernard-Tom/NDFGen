@@ -1,8 +1,19 @@
+import os
 import csv 
 from datetime import datetime
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.styles import Font,Border,Side,Alignment
+
+#APP_PATH = os.path.abspath(os.path.join(os.getcwd(), os.pardir)) 
+APP_PATH = os.getcwd()
+DATA_PATH = os.path.join(APP_PATH,'data')
+
+USER_DATA_PATH = os.path.join(DATA_PATH,'user_data.csv')
+HISTORIC_PATH = os.path.join(DATA_PATH,'historic.csv')
+TRAVEL_PATH = os.path.join(DATA_PATH,'travel.csv')
+ADRESS_PATH = os.path.join(DATA_PATH,'adress.csv')
+EXCEL_PATH = os.path.join(DATA_PATH,'NDF.xlsx')
 
 class Adress():
     """Class used to represent an Adress"""
@@ -36,12 +47,8 @@ class Travel(): # A modifier
 class Data():
     """A class used to get and set saved file data"""    
     def __init__(self) -> None:
-        self.historic_root = './data/historic.csv'
-        self.adress_root = './data/adress.csv'
-        self.user_data_root = './data/user_data.csv'
-        self.travel_root = './data/travel.csv'
-        self.ndf_excel_root = './data/NDF.xlsx'
-    
+        pass
+
     def getDataList(self,root) -> list[list[str]]:
         # return a list of file row with header
         with open(root,'r')as csv_file:
@@ -49,8 +56,8 @@ class Data():
             list_reader = list(reader)
         return(list_reader) 
     
-    def getTravelList(self,root) -> list[Travel]:
-        with open(root,'r')as csv_file:
+    def getTravelList(self) -> list[Travel]:
+        with open(HISTORIC_PATH,'r')as csv_file:
             reader = csv.DictReader(csv_file,delimiter=';')
             list_reader = list(reader)
             travel_list = []
@@ -65,8 +72,8 @@ class Data():
                 travel_list.append(travel)
         return(travel_list) 
 
-    def getAdressList(self,root) -> list[Adress]:
-        with open(root,'r')as csv_file:
+    def getAdressList(self) -> list[Adress]:
+        with open(ADRESS_PATH,'r')as csv_file:
             adress_list = []
             reader = csv.DictReader(csv_file,delimiter=';')
             list_reader = list(reader)
@@ -87,23 +94,23 @@ class Data():
 
     def saveAdress(self,adress:Adress) -> None:
         """Save adress in adress.csv if it's new adress"""
-        data = self.getDataList(self.adress_root)
+        data = self.getDataList(ADRESS_PATH)
         row = [adress.name,adress.street,adress.postal,adress.city]
         if not(row in data):
             data.append(row)
-            self.writeData(self.adress_root,data)
+            self.writeData(ADRESS_PATH,data)
 
     def deleteTravel(self,travel:Travel) -> None:
-        row_list = self.getDataList(self.historic_root)
+        row_list = self.getDataList(HISTORIC_PATH)
         row = travel.getRow()
         if row in row_list:
             index = row_list.index(row)
             row_list.pop(index)
-            self.writeData(self.historic_root,row_list)
+            self.writeData(HISTORIC_PATH,row_list)
 
     def saveToHistoric(self,old_travel:Travel,new_travel:Travel) -> None:
         """Sauvegarde un travel dans historic.csv"""
-        row_list= self.getDataList(self.historic_root)
+        row_list= self.getDataList(HISTORIC_PATH)
         new_row = new_travel.getRow()
         
         if old_travel != None:
@@ -131,39 +138,31 @@ class Data():
         else:
             row_list.append(new_row)
 
-        self.writeData(self.historic_root,row_list)
+        self.writeData(HISTORIC_PATH,row_list)
 
     def saveToTravel(self,travel:Travel) -> None:
-        data = self.getDataList(self.travel_root)
+        data = self.getDataList(TRAVEL_PATH)
         start_name = travel.start_adress.name
         end_name = travel.end_adress.name
         distance = travel.distance
         if len(data[1:]) == 0:
             data.append([start_name,end_name,distance])
-            self.writeData(self.travel_root,data)
+            self.writeData(TRAVEL_PATH,data)
             return 0
         for row in data[1:]:
             if not(start_name in row and end_name in row): # Si les deux éléments ne sont pas dans la liste
                 new_row = [start_name,end_name,distance]
                 data.append(new_row)
-                self.writeData(self.travel_root,data)
+                self.writeData(TRAVEL_PATH,data)
                 break
 
     def getTravelDistance(self,start_adress_name:str,end_adress_name:str) -> str|bool:
         """Check if travel is in travel.csv and return distance"""
-        travel_list = self.getDataList(self.travel_root)[1:]
+        travel_list = self.getDataList(TRAVEL_PATH)[1:]
         for row in travel_list:
             if start_adress_name in row and end_adress_name in row:
                 return row[2]
         return False
-
-class Roots():
-    def __init__(self) -> None:
-        self.historic = './data/historic.csv'
-        self.adress = './data/adress.csv'
-        self.user_data = './data/user_data.csv'
-        self.travel = './data/travel.csv'
-        self.ndf_excel = './data/NDF.xlsx'
 
 class Excel():
     """Class used to generate excel file"""
@@ -171,7 +170,6 @@ class Excel():
         self.data = Data()
         self.start_date = start_date
         self.end_date = end_date
-        self.root = Roots()
 
         self.header_row = 6
         self.start_tab_row = self.header_row+1
@@ -197,7 +195,7 @@ class Excel():
         end_date = datetime.strptime(end_date,'%d/%m/%Y')
 
         # Lecture du fichier
-        df = pd.read_csv(self.root.historic,sep=';')
+        df = pd.read_csv(HISTORIC_PATH,sep=';')
         df_columns = ['date','end_name','end_street','end_postal','end_city','distance','price']
         nb_rows = df.shape[0]
 
@@ -232,11 +230,11 @@ class Excel():
         return(tab_dict)
 
     def setSheet(self,start_date,end_date,border:Border,font:Font) -> None:
-        df = pd.read_csv(self.root.user_data,sep=';',index_col=False)
-        user_name = df['user_name'][0]
+        df = pd.read_csv(USER_DATA_PATH,sep=';',index_col=False)
+        user_name = df['name'][0]
         code = df['code'][0]
-        user_adress = df['user_adress'][0]
-        user_bank = df['user_bank'][0]
+        user_adress = df['adress'][0]
+        user_bank = df['bank'][0]
 
         title = f'Frais de déplacement du {start_date} au {end_date}'
 
@@ -290,5 +288,5 @@ class Excel():
         self.sh.cell(row=tab['Total Déplacement'], column = len(self.tab_dict),value = total)
 
     def save(self) -> None:
-        self.wb.save(self.data.ndf_excel_root)
+        self.wb.save(EXCEL_PATH)
 

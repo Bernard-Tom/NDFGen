@@ -20,9 +20,8 @@ class AdressEditorWidget(QGroupBox):
     edit_signal = pyqtSignal()
     def __init__(self,title) -> None:
         super().__init__()
-        self.root = Roots()
         self.data = Data()
-        self.adress_list = self.data.getAdressList(self.root.adress)
+        self.adress_list = self.data.getAdressList()
         self.adress_edited = False
         self.setWidgetStyle(title)
         self.UIComponents()
@@ -158,7 +157,6 @@ class PrmtrEditorWidget(QGroupBox):
         super().__init__()
         self.setWidgetStyle()
         self.data = Data()
-        self.root = Roots()
         self.UIComponents()
 
     def setWidgetStyle(self) -> None:
@@ -217,7 +215,7 @@ class PrmtrEditorWidget(QGroupBox):
         else: self.return_btn.setChecked(False)
 
     def setPreviousDate(self) -> None:
-        data = self.data.getTravelList(self.root.historic)
+        data = self.data.getTravelList()
         if len(data) != 0:
             last_travel = data[len(data)-1]
             self.setDate(last_travel.date)
@@ -254,8 +252,7 @@ class TravelEditorWin(QWidget):
         super().__init__()
         self.old_travel = None
         self.data = Data()
-        self.root = Roots()
-        self.adress_list = self.data.getAdressList(self.root.adress)
+        self.adress_list = self.data.getAdressList()
         self.UIComponents()
 
     def UIComponents(self)-> None:
@@ -430,7 +427,6 @@ class TravelListWidget(QWidget):
     edit_signal = pyqtSignal(Travel)
     def __init__(self) -> None:
         super().__init__()
-        self.root = Roots()
         self.data = Data()
         self.widget_list = []
         self.UIComponents()
@@ -444,7 +440,7 @@ class TravelListWidget(QWidget):
     def getlWidgetList(self) -> list[TravelWidget]:
         """Get all row list from csv file"""
         widget_list = []
-        for travel in self.data.getTravelList(self.root.historic):
+        for travel in self.data.getTravelList():
             travel_widget = TravelWidget(travel)
             widget_list.append(travel_widget)
         return(widget_list)
@@ -481,7 +477,6 @@ class TravelListWidget(QWidget):
 class GenWin(QWidget):
     def __init__(self) -> None:
         super().__init__()
-        self.root = Roots()
         self.UIComponents()
 
     def UIComponents(self) -> None:
@@ -555,7 +550,6 @@ class HistoricWin(QWidget):
     """Class used to show all travel for historic"""
     def __init__(self) -> None:
         super().__init__()
-        self.root = Roots()
         self.data = Data()
         self.UIComponents()
 
